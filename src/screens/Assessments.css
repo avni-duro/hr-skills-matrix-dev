@@ -1,0 +1,354 @@
+/* Assessments Listing Screen Styles */
+
+.assessments-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.assessments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.assessments-header h2 {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #111827;
+  margin: 0;
+}
+
+.assessments-header p {
+  font-size: 1rem;
+  color: #6B7280;
+  margin: 0.25rem 0 0 0;
+}
+
+/* Table Container */
+.assessments-table-container {
+  background: white;
+  border-radius: 0.75rem;
+  border: 1px solid #E5E7EB;
+  overflow: hidden;
+}
+
+.table-filters {
+  padding: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #E5E7EB;
+  flex-wrap: wrap;
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-wrapper i {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9CA3AF;
+  font-size: 0.875rem;
+}
+
+.search-wrapper input {
+  width: 100%;
+  padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: #F9FAFB;
+  transition: all 0.2s;
+}
+
+.search-wrapper input:focus {
+  outline: none;
+  border-color: #4F46E5;
+  background: white;
+}
+
+.filter-select-wrapper {
+  position: relative;
+}
+
+.filter-select-wrapper select {
+  padding: 0.625rem 2.5rem 0.625rem 0.875rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: #F9FAFB;
+  color: #374151;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  transition: all 0.2s;
+}
+
+.filter-select-wrapper select:focus {
+  outline: none;
+  border-color: #4F46E5;
+  background-color: white;
+}
+
+/* Table Styles */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.assessments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.assessments-table thead {
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.assessments-table th {
+  padding: 0.875rem 1.25rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.assessments-table tbody tr {
+  border-bottom: 1px solid #E5E7EB;
+  transition: background-color 0.15s;
+}
+
+.assessments-table tbody tr:hover {
+  background-color: #F9FAFB;
+}
+
+.assessments-table td {
+  padding: 1rem 1.25rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+/* Quiz Title Cell */
+.quiz-title-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.quiz-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: #EEF2FF;
+  color: #4F46E5;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.quiz-name {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Module Info Cell */
+.module-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.module-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.video-name {
+  font-size: 0.8125rem;
+  color: #6B7280;
+}
+
+/* Question Count */
+.question-count {
+  color: #6B7280;
+  font-weight: 500;
+}
+
+/* Passing Score */
+.passing-score {
+  font-weight: 600;
+  color: #4F46E5;
+}
+
+/* Date Text */
+.date-text {
+  color: #6B7280;
+  font-size: 0.8125rem;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge.published {
+  background: #DEF7EC;
+  color: #03543F;
+}
+
+.status-badge.draft {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+/* Action Buttons Cell */
+.action-buttons-cell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.edit-btn {
+  background: #EEF2FF;
+  color: #4F46E5;
+}
+
+.edit-btn:hover {
+  background: #4F46E5;
+  color: white;
+}
+
+.delete-btn {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.delete-btn:hover {
+  background: #DC2626;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 1280px) {
+  .assessments-table th,
+  .assessments-table td {
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .assessments-main {
+    padding: 1.5rem;
+  }
+
+  .table-filters {
+    flex-direction: column;
+  }
+
+  .search-wrapper {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .assessments-main {
+    padding: 1rem;
+  }
+
+  .assessments-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .assessments-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .action-buttons {
+    width: 100%;
+  }
+
+  .action-buttons .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .assessments-table {
+    font-size: 0.8125rem;
+  }
+
+  .assessments-table th,
+  .assessments-table td {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .quiz-icon {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .assessments-main {
+    padding: 0.75rem;
+  }
+
+  .assessments-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .table-wrapper {
+    overflow-x: scroll;
+  }
+
+  .assessments-table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-filters {
+    padding: 1rem;
+  }
+
+  .assessments-table th,
+  .assessments-table td {
+    padding: 0.5rem;
+  }
+}

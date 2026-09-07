@@ -1,0 +1,44 @@
+.sdd-top-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.sdd-download-all {
+  align-self: auto;
+}
+
+.sdd-card {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.sdd-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.sdd-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.sdd-file-name {
+  color: #9ca3af;
+  word-break: break-all;
+}
+
+.sdd-download-btn {
+  margin-bottom: 0;
+}

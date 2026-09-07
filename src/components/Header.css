@@ -1,0 +1,159 @@
+/* Header */
+.header {
+  height: 64px;
+  background-color: white;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  flex-shrink: 0;
+}
+
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: #6B7280;
+  cursor: pointer;
+  margin-right: 1rem;
+  padding: 0.5rem;
+}
+
+.menu-toggle:hover {
+  color: #4F46E5;
+}
+
+.breadcrumb {
+  font-size: 0.875rem;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.breadcrumb a {
+  color: #6B7280;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumb a:hover {
+  color: #4F46E5;
+}
+
+.breadcrumb i.separator {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+}
+
+.breadcrumb .current {
+  color: #1F2937;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-shrink: 0;
+}
+
+.search-box {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 11rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9CA3AF;
+  pointer-events: none;
+  z-index: 2;
+  font-size: 0.875rem;
+}
+
+.search-box input {
+  padding: 0.5rem 1rem 0.5rem 2.5rem;
+  width: 256px;
+  font-size: 0.875rem;
+  background-color: #F3F4F6;
+  border: none;
+  border-radius: 0.5rem;
+  outline: none;
+  position: relative;
+  z-index: 1;
+}
+
+/* .search-box input:focus {     
+  outline: 2px solid #4F46E5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+} */
+
+.notification-btn {
+  position: relative;
+  background: none;
+  border: none;
+  color: #6B7280;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.notification-btn:hover {
+  color: #4F46E5;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #EF4444;
+  border-radius: 50%;
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+  .menu-toggle {
+    display: inline-block !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0 1rem;
+  }
+
+  .breadcrumb {
+    font-size: 0.75rem;
+  }
+
+  .search-box {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 0 0.75rem;
+    height: 56px;
+  }
+
+  .notification-btn {
+    font-size: 1rem;
+  }
+}

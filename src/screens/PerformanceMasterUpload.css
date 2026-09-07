@@ -1,0 +1,464 @@
+/* ── Data panel (tabs + table) ──────────────────────────────── */
+.pmu-data-card { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
+
+.pmu-tabs {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #E5E7EB;
+  padding: 0 1rem;
+  gap: 0;
+  overflow-x: auto;
+}
+.pmu-tab {
+  padding: 0.6rem 0.75rem;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.pmu-tab:hover { color: #374151; }
+.pmu-tab.active { font-weight: 600; }
+.pmu-tab-count {
+  background: #F3F4F6;
+  border-radius: 99px;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.72rem;
+  color: #6B7280;
+  font-weight: 600;
+}
+.pmu-tab-refresh { margin-left: auto; border: none !important; border-bottom: 2.5px solid transparent !important; }
+
+.pmu-table-wrap { overflow-x: auto; padding: 0.6rem 1rem; }
+
+.pmu-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.pmu-data-table th {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  font-weight: 600;
+  color: #6B7280;
+  border-bottom: 1.5px solid #E5E7EB;
+  white-space: nowrap;
+}
+.pmu-data-table td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid #F3F4F6;
+  color: #374151;
+  vertical-align: middle;
+}
+.pmu-data-table tr:last-child td { border-bottom: none; }
+.pmu-data-table tr:hover td { background: #F9FAFB; }
+
+.pmu-brand-badge {
+  display: inline-block;
+  background: #EDE9FE;
+  color: #6D28D9;
+  padding: 0.15rem 0.6rem;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.pmu-code {
+  background: #F3F4F6;
+  color: #374151;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.8rem;
+  font-family: monospace;
+}
+.pmu-muted { color: #9CA3AF; font-size: 0.78rem; }
+
+.pmu-btn-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #D1D5DB;
+  padding: 0.3rem 0.4rem;
+  border-radius: 0.3rem;
+  transition: color 0.15s, background 0.15s;
+}
+.pmu-btn-del:hover { color: #EF4444; background: #FEE2E2; }
+
+.pmu-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 2rem 0;
+  color: #9CA3AF;
+  font-size: 0.875rem;
+  text-align: center;
+}
+.pmu-empty i { font-size: 1.5rem; }
+.pmu-empty p { margin: 0; }
+@media (max-width: 1100px) {
+  .pmu-layout { grid-template-columns: 1fr; }
+}
+
+.pmu-upload-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Card ───────────────────────────────────────────────── */
+.pmu-card {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+}
+.pmu-card h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ── Type selector ──────────────────────────────────────── */
+.pmu-type-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+.pmu-type-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 0.5rem;
+  background: #F9FAFB;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+.pmu-type-btn:hover {
+  border-color: #D1D5DB;
+  background: #F3F4F6;
+}
+.pmu-type-btn.selected {
+  font-weight: 600;
+}
+.pmu-type-btn i {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  width: 18px;
+}
+.pmu-type-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: inherit;
+}
+.pmu-type-desc {
+  font-size: 0.68rem;
+  color: #9CA3AF;
+  margin-top: 0;
+}
+
+/* ── Columns hint ───────────────────────────────────────── */
+.pmu-columns-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: #6B7280;
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  border-radius: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.pmu-columns-hint i { color: #0284C7; margin-top: 1px; flex-shrink: 0; }
+.pmu-columns-hint strong { color: #0369A1; }
+
+/* ── File zone ──────────────────────────────────────────── */
+.pmu-file-zone {
+  border: 2px dashed #D1D5DB;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  text-align: center;
+  cursor: pointer;
+  background: #F9FAFB;
+  transition: border-color 0.15s, background 0.15s;
+  margin-bottom: 0.5rem;
+}
+.pmu-file-zone:hover { border-color: #7C3AED; background: #F5F3FF; }
+
+.pmu-file-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  color: #9CA3AF;
+}
+.pmu-file-placeholder i { font-size: 1.3rem; color: #7C3AED; }
+.pmu-file-placeholder span { font-size: 0.85rem; }
+
+.pmu-file-selected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+.pmu-file-selected i { font-size: 1.5rem; color: #059669; }
+.pmu-file-name { font-size: 0.875rem; font-weight: 600; color: #111827; }
+.pmu-file-size { font-size: 0.75rem; color: #6B7280; }
+
+/* ── Preview ────────────────────────────────────────────── */
+.pmu-preview {
+  margin-bottom: 0.75rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.pmu-preview-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6B7280;
+  padding: 0.4rem 0.75rem;
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.pmu-preview-table-wrap { overflow-x: auto; }
+.pmu-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.pmu-preview-table th {
+  padding: 0.35rem 0.6rem;
+  background: #F3F4F6;
+  color: #374151;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+.pmu-preview-table td {
+  padding: 0.35rem 0.6rem;
+  color: #374151;
+  border-top: 1px solid #F3F4F6;
+  white-space: nowrap;
+}
+
+/* ── Progress ───────────────────────────────────────────── */
+.pmu-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.pmu-progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #E5E7EB;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.pmu-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.2s;
+}
+.pmu-progress-wrap span { font-size: 0.875rem; font-weight: 600; min-width: 36px; text-align: right; }
+
+/* ── Result ─────────────────────────────────────────────── */
+.pmu-result {
+  border-radius: 0.6rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+.pmu-result.success { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+.pmu-result.partial { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+.pmu-result.failed  { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+.pmu-result-stats { display: flex; gap: 1.25rem; font-weight: 600; }
+.pmu-result-stats i { margin-right: 0.3rem; }
+.pmu-result-errors { margin: 0.4rem 0 0; padding-left: 1.2rem; font-size: 0.78rem; }
+
+/* ── Download format button ─────────────────────────────────── */
+.pmu-btn-download-format {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  background: #F0FDF4;
+  color: #15803D;
+  border: 1.5px solid #86EFAC;
+  border-radius: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+.pmu-btn-download-format:hover {
+  background: #DCFCE7;
+  border-color: #4ADE80;
+}
+.pmu-btn-download-format i { font-size: 0.85rem; }
+
+/* ── Upload button ──────────────────────────────────────── */
+.pmu-btn-upload {
+  padding: 0.5rem 1.25rem;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: opacity 0.15s;
+}
+.pmu-btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
+.pmu-btn-upload:not(:disabled):hover { opacity: 0.88; }
+
+/* ── Sessions ───────────────────────────────────────────── */
+.pmu-sessions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.pmu-sessions-header h3 { margin: 0; }
+.pmu-btn-refresh {
+  background: none;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.55rem;
+  cursor: pointer;
+  color: #6B7280;
+  transition: color 0.15s, border-color 0.15s;
+}
+.pmu-btn-refresh:hover { color: #7C3AED; border-color: #7C3AED; }
+
+.pmu-sessions-list { display: flex; flex-direction: column; gap: 0.3rem; }
+.pmu-session-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.4rem;
+  border-radius: 0.4rem;
+  background: #F9FAFB;
+}
+.pmu-session-row > i { font-size: 1rem; flex-shrink: 0; }
+.pmu-session-info { flex: 1; min-width: 0; }
+.pmu-session-name { font-size: 0.8rem; font-weight: 600; color: #111827; }
+.pmu-session-file { font-size: 0.72rem; color: #9CA3AF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pmu-status-pill { padding: 0.2rem 0.5rem; border-radius: 99px; font-size: 0.72rem; font-weight: 600; text-transform: capitalize; flex-shrink: 0; }
+
+.pmu-empty { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 1.25rem 0; color: #9CA3AF; font-size: 0.8rem; text-align: center; }
+.pmu-empty i { font-size: 1.2rem; }
+.pmu-empty p { margin: 0; }
+
+/* ── Data panel ─────────────────────────────────────────── */
+.pmu-data-card { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
+
+.pmu-tabs {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #E5E7EB;
+  padding: 0 1rem;
+  gap: 0;
+}
+.pmu-tab {
+  padding: 0.5rem 0.7rem;
+  border: none;
+  border-bottom: 2.5px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+.pmu-tab:hover { color: #374151; }
+.pmu-tab.active { font-weight: 600; }
+.pmu-tab-count {
+  background: #F3F4F6;
+  border-radius: 99px;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.72rem;
+  color: #6B7280;
+  font-weight: 600;
+}
+.pmu-tab-refresh { margin-left: auto; border: none; border-bottom: 2.5px solid transparent !important; }
+
+.pmu-table-wrap { overflow-x: auto; padding: 0.6rem 1rem; }
+
+.pmu-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.pmu-data-table th {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  font-weight: 600;
+  color: #6B7280;
+  border-bottom: 1.5px solid #E5E7EB;
+  white-space: nowrap;
+}
+.pmu-data-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #F3F4F6;
+  color: #374151;
+  vertical-align: middle;
+}
+.pmu-data-table tr:last-child td { border-bottom: none; }
+.pmu-data-table tr:hover td { background: #F9FAFB; }
+
+.pmu-brand-badge {
+  display: inline-block;
+  background: #EDE9FE;
+  color: #6D28D9;
+  padding: 0.15rem 0.6rem;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.pmu-code {
+  background: #F3F4F6;
+  color: #374151;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.8rem;
+}
+.pmu-muted { color: #9CA3AF; font-size: 0.78rem; }
+
+.pmu-btn-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #D1D5DB;
+  padding: 0.3rem 0.4rem;
+  border-radius: 0.3rem;
+  transition: color 0.15s, background 0.15s;
+}
+.pmu-btn-del:hover { color: #EF4444; background: #FEE2E2; }

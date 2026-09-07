@@ -1,0 +1,331 @@
+/* Assignment Results Screen */
+
+.assignment-results-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.assignment-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.assignment-results-header h2 {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #111827;
+  margin: 0;
+}
+
+.assignment-results-header p {
+  font-size: 1rem;
+  color: #6B7280;
+  margin: 0.25rem 0 0 0;
+}
+
+.assignment-results-table-container {
+  background-color: white;
+  border-radius: 0.75rem;
+  border: 1px solid #E5E7EB;
+  overflow: hidden;
+}
+
+.table-filters {
+  padding: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #E5E7EB;
+  flex-wrap: wrap;
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-wrapper i {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9CA3AF;
+  font-size: 0.875rem;
+}
+
+.search-wrapper input {
+  width: 100%;
+  padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: #F9FAFB;
+  transition: all 0.2s;
+}
+
+.search-wrapper input:focus {
+  outline: none;
+  border-color: #4F46E5;
+  background: white;
+}
+
+.filter-select-wrapper {
+  position: relative;
+}
+
+.filter-select-wrapper select {
+  padding: 0.625rem 2.5rem 0.625rem 0.875rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: #F9FAFB;
+  color: #374151;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25rem;
+  transition: all 0.2s;
+}
+
+.filter-select-wrapper select:focus {
+  outline: none;
+  border-color: #4F46E5;
+  background-color: white;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.assignment-results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.assignment-results-table thead {
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.assignment-results-table th {
+  padding: 0.4rem 0.75rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.assignment-results-table tbody tr {
+  border-bottom: 1px solid #E5E7EB;
+  transition: background-color 0.15s;
+}
+
+.assignment-results-table tbody tr:hover {
+  background-color: #F9FAFB;
+  cursor: pointer;
+}
+
+.assignment-results-table td {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  color: #374151;
+  vertical-align: middle;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.user-avatar-small {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background-color: #4F46E5;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.75rem;
+  line-height: 1.15;
+}
+
+.user-email {
+  font-size: 0.7rem;
+  color: #6B7280;
+  line-height: 1.15;
+}
+
+.quiz-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.quiz-title {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.75rem;
+  line-height: 1.15;
+}
+
+.quiz-subtext {
+  font-size: 0.65rem;
+  color: #6B7280;
+  line-height: 1.15;
+}
+
+/* Reuse status-badge/date-text styles from assessments */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge.published {
+  background: #DEF7EC;
+  color: #03543F;
+}
+
+.status-badge.draft {
+  background: #FEE2E2;
+  color: #B91C1C;
+}
+
+.date-text {
+  color: #6B7280;
+  font-size: 0.8125rem;
+}
+
+/* Detail drawer */
+
+.assignment-detail-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.25);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 50;
+}
+
+.assignment-detail-panel {
+  width: 380px;
+  max-width: 100%;
+  background-color: #FFFFFF;
+  box-shadow: -2px 0 8px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.assignment-detail-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.assignment-detail-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.assignment-detail-header p {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.8125rem;
+  color: #6B7280;
+}
+
+.assignment-detail-close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #6B7280;
+  font-size: 1.125rem;
+}
+
+.assignment-detail-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.summary-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #6B7280;
+}
+
+.summary-value {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.assignment-detail-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.assignment-detail-list table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.assignment-detail-list th,
+.assignment-detail-list td {
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid #E5E7EB;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .assignment-results-main {
+    padding: 1rem;
+  }
+
+  .assignment-results-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .table-filters {
+    padding: 1rem;
+  }
+}
