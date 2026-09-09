@@ -46,6 +46,7 @@ const LeadTaskScreen = lazy(() => import('./screens/LeadTaskScreen'))
 const MasterEnrollmentScreen = lazy(() => import('./screens/MasterEnrollmentScreen'))
 const HolidayScreen = lazy(() => import('./screens/HolidayScreen'))
 const OnrollOffrole = lazy(() => import('./screens/OnrollOffrole'))
+const ManagerRating = lazy(() => import('./screens/ManagerRating'))
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -111,6 +112,7 @@ function App() {
             <Route path="/assign-performance-dashboard" element={<Screen screen={SCREENS.ASSIGN_PERFORMANCE_DASHBOARD}><AssignPerformanceDashboard /></Screen>} />
             <Route path="/performance-dashboard" element={<Screen screen={SCREENS.PERFORMANCE_DASHBOARD}><PerformanceDashboard /></Screen>} />
             <Route path="/asm-performance-dashboard" element={<Screen screen={SCREENS.ASM_PERFORMANCE_DASHBOARD}><AsmPerformanceDashboard /></Screen>} />
+            <Route path="/manager-rating" element={<Screen screen={SCREENS.MANAGER_RATING}><ManagerRating /></Screen>} />
             <Route path="/performance-branch-access" element={<Screen screen={SCREENS.PERFORMANCE_BRANCH_ACCESS}><PerformanceBranchAccess /></Screen>} />
             <Route path="/excel-upload" element={<Screen screen={SCREENS.EXCEL_UPLOAD}><ExcelUpload /></Screen>} />
             <Route path="/sales-data-download" element={<Screen screen={SCREENS.SALES_DATA_DOWNLOAD}><SalesDataDownload /></Screen>} />
