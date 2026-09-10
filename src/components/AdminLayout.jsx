@@ -21,7 +21,7 @@ const BREADCRUMB_MAP = {
   '/assign-modules': 'Assign Modules',
   '/admin-permissions': 'Admin Permissions',
   '/performance-branch-access': 'Branch Access',
-  '/manager-rating': 'Skill Matrix',
+  '/skill-matrix': 'Skill Matrix',
   '/goal-master': 'Goal Master',
 }
 

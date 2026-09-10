@@ -47,7 +47,7 @@ export const SCREENS = {
   MASTER_ENROLLMENT: 'master-enrollment',
   HOLIDAY: 'holiday',
   ONROLL_OFFROLE: 'onroll-offrole',
-  MANAGER_RATING: 'manager-rating',
+  SKILL_MATRIX: 'skill-matrix',
 }
 
 // Allowed roles that can access the admin panel
@@ -94,7 +94,7 @@ export const ROLE_PERMISSIONS = {
     SCREENS.MASTER_ENROLLMENT,
     SCREENS.HOLIDAY,
     SCREENS.ONROLL_OFFROLE,
-    SCREENS.MANAGER_RATING,
+    SCREENS.SKILL_MATRIX,
   ],
 }
 
@@ -121,7 +121,7 @@ export const NAV_ITEMS = [
   { path: '/assign-performance-dashboard', label: 'Assign Performance', icon: 'fa-solid fa-chart-bar', screen: SCREENS.ASSIGN_PERFORMANCE_DASHBOARD },
   { path: '/performance-dashboard', label: 'DURO Lakshya Dashboard', icon: 'fa-solid fa-chart-bar', screen: SCREENS.PERFORMANCE_DASHBOARD },
   { path: '/asm-performance-dashboard', label: 'DURO Lakshya Dashboard ASM', icon: 'fa-solid fa-users-viewfinder', screen: SCREENS.ASM_PERFORMANCE_DASHBOARD },
-  { path: '/manager-rating', label: 'Skill Matrix', icon: 'fa-solid fa-star-half-stroke', screen: SCREENS.MANAGER_RATING },
+  { path: '/skill-matrix', label: 'Skill Matrix', icon: 'fa-solid fa-star-half-stroke', screen: SCREENS.SKILL_MATRIX },
   { path: '/performance-branch-access', label: 'Branch Access', icon: 'fa-solid fa-sitemap', screen: SCREENS.PERFORMANCE_BRANCH_ACCESS },
   { path: '/category-access', label: 'Category Access', icon: 'fa-solid fa-layer-group', screen: SCREENS.CATEGORY_ACCESS },
   { path: '/admin-permissions', label: 'Admin Permissions', icon: 'fa-solid fa-shield-halved', screen: SCREENS.ADMIN_PERMISSIONS },

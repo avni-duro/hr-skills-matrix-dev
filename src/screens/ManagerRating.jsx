@@ -1,176 +1,156 @@
 import { useMemo, useState } from 'react'
+import { saveReview } from '../services/skillMatrixReviews'
+import {
+  SKILL_PARAMETERS,
+  RATING_SCALE,
+  PASS_MARK,
+  scoreClass,
+  formatDate,
+  initialsOf,
+} from '../config/skillMatrix'
 import './ManagerRating.css'
 
-// Rating parameters filled in by the reporting manager (1 - 5 each)
-const PARAMETERS = [
-  { key: 'productKnowledge', label: 'Product Knowledge' },
-  { key: 'leadConversion', label: 'Lead Conversion' },
-  { key: 'dmiUpgradation', label: 'DMI Upgradation' },
-  { key: 'siteWorking', label: 'Site Working' },
-  { key: 'loyaltyAwareness', label: 'Awareness of Loyalty Programme' },
-  { key: 'sfaApp', label: 'SFA APP' },
-  { key: 'complaintHandling', label: 'Complaint Handling' },
-  { key: 'marketKnowledge', label: 'Market Knowledge' },
-  { key: 'competitorKnowledge', label: 'Competitor Knowledge' },
-  { key: 'dmiManagement', label: 'DMI Management' },
-]
+const EMPTY_RATINGS = SKILL_PARAMETERS.reduce((acc, parameter) => ({ ...acc, [parameter.key]: 0 }), {})
 
-const RATING_SCALE = [1, 2, 3, 4, 5]
-const PASS_MARK = 3
-const DESIGNATIONS = ['DGO', 'DMI', 'TSM', 'ASM']
-
-const EMPTY_FORM = {
-  empCode: '',
-  name: '',
-  branch: '',
-  designation: '',
-  dateOfJoining: '',
-  reportingManager: '',
-  ratingPeriod: '',
-  remarks: '',
-  ratings: PARAMETERS.reduce((acc, parameter) => ({ ...acc, [parameter.key]: 0 }), {}),
-}
-
-const monthsBetween = (fromDate, toDate) => {
-  const months = (toDate.getFullYear() - fromDate.getFullYear()) * 12 + (toDate.getMonth() - fromDate.getMonth())
-  return toDate.getDate() < fromDate.getDate() ? months - 1 : months
-}
-
-const ageingFromJoining = (dateOfJoining) => {
-  if (!dateOfJoining) return null
-  const joined = new Date(dateOfJoining)
-  if (Number.isNaN(joined.getTime())) return null
-  const months = monthsBetween(joined, new Date())
-  return months < 0 ? null : months
-}
-
-const formatAgeing = (months) => {
-  if (months === null) return '-'
-  const years = Math.floor(months / 12)
-  const rest = months % 12
-  if (!years) return `${rest} mo`
-  if (!rest) return `${years} yr`
-  return `${years} yr ${rest} mo`
-}
-
-const scoreClass = (score) => {
-  if (score >= 4) return 'strong'
-  if (score >= PASS_MARK) return 'meets'
-  return 'below'
-}
-
-export default function ManagerRating() {
-  const [form, setForm] = useState(EMPTY_FORM)
+/**
+ * Review page opened from the Skill Matrix team list.
+ * Employee details arrive pre-filled from the users table; the reporting
+ * manager only fills the ratings, period and remarks.
+ */
+export default function ManagerRating({ employee, reviewer, previousReview = null, onBack, onSaved }) {
+  const [ratings, setRatings] = useState(EMPTY_RATINGS)
+  const [ratingPeriod, setRatingPeriod] = useState('')
+  const [remarks, setRemarks] = useState('')
   const [errors, setErrors] = useState([])
   const [saved, setSaved] = useState(null)
-
-  const ageingMonths = useMemo(() => ageingFromJoining(form.dateOfJoining), [form.dateOfJoining])
+  const [submitting, setSubmitting] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const ratedCount = useMemo(
-    () => PARAMETERS.filter(parameter => form.ratings[parameter.key] > 0).length,
-    [form.ratings]
+    () => SKILL_PARAMETERS.filter(parameter => ratings[parameter.key] > 0).length,
+    [ratings]
   )
 
   const averageScore = useMemo(() => {
     if (!ratedCount) return 0
-    const total = PARAMETERS.reduce((sum, parameter) => sum + (form.ratings[parameter.key] || 0), 0)
+    const total = SKILL_PARAMETERS.reduce((sum, parameter) => sum + (ratings[parameter.key] || 0), 0)
     return total / ratedCount
-  }, [form.ratings, ratedCount])
+  }, [ratings, ratedCount])
 
   const weakParameters = useMemo(
-    () => PARAMETERS.filter(parameter => {
-      const value = form.ratings[parameter.key]
+    () => SKILL_PARAMETERS.filter(parameter => {
+      const value = ratings[parameter.key]
       return value > 0 && value < PASS_MARK
     }),
-    [form.ratings]
+    [ratings]
   )
 
-  const allRated = ratedCount === PARAMETERS.length
+  const allRated = ratedCount === SKILL_PARAMETERS.length
   const status = averageScore >= PASS_MARK ? 'good' : 'low'
 
-  const onFieldChange = (event) => {
-    const { name, value } = event.target
-    setForm(prev => ({ ...prev, [name]: value }))
-    setSaved(null)
-  }
-
   const onRatingChange = (parameterKey, value) => {
-    setForm(prev => ({
-      ...prev,
-      ratings: { ...prev.ratings, [parameterKey]: prev.ratings[parameterKey] === value ? 0 : value },
-    }))
+    setRatings(prev => ({ ...prev, [parameterKey]: prev[parameterKey] === value ? 0 : value }))
     setSaved(null)
   }
 
-  const resetForm = () => {
-    setForm(EMPTY_FORM)
+  const resetReview = () => {
+    setRatings(EMPTY_RATINGS)
+    setRatingPeriod('')
+    setRemarks('')
     setErrors([])
+    setSaveError('')
     setSaved(null)
   }
 
-  const onSubmit = (event) => {
+  const onSubmit = async (event) => {
     event.preventDefault()
 
     const found = []
-    if (!form.empCode.trim()) found.push('Employee code is required')
-    if (!form.name.trim()) found.push('Employee name is required')
-    if (!form.branch.trim()) found.push('Branch is required')
-    if (!form.designation) found.push('Designation is required')
-    if (!form.reportingManager.trim()) found.push('Reporting manager is required')
-    if (!form.ratingPeriod) found.push('Rating period is required')
-    if (!allRated) found.push(`Rate all ${PARAMETERS.length} parameters (${ratedCount} done)`)
+    if (!ratingPeriod) found.push('Rating period is required')
+    if (!allRated) found.push(`Rate all ${SKILL_PARAMETERS.length} parameters (${ratedCount} done)`)
 
     setErrors(found)
+    setSaveError('')
     if (found.length) {
       setSaved(null)
       return
     }
 
-    // Submission target is not wired yet - the record is only prepared here.
     const record = {
-      empCode: form.empCode.trim(),
-      name: form.name.trim(),
-      branch: form.branch.trim(),
-      designation: form.designation,
-      dateOfJoining: form.dateOfJoining || null,
-      ageingMonths,
-      reportingManager: form.reportingManager.trim(),
-      ratingPeriod: form.ratingPeriod,
-      remarks: form.remarks.trim(),
-      ratings: { ...form.ratings },
+      employeeUserId: employee.id,
+      employeeCode: employee.empCode,
+      employeeName: employee.name,
+      branch: employee.branch,
+      department: employee.department,
+      designation: employee.designation,
+      reviewerUserId: reviewer?.id || null,
+      reviewerCode: reviewer?.empCode || '',
+      reviewerName: reviewer?.name || '',
+      ratingPeriod,
+      remarks: remarks.trim(),
+      ratings: { ...ratings },
       averageRating: Number(averageScore.toFixed(1)),
       status: status === 'good' ? 'Good' : 'Low Performance',
-      retrainingRequired: status !== 'good' || weakParameters.length > 0,
+      retrainingRequired: status !== 'good',
       retrainingParameters: weakParameters.map(parameter => parameter.label),
     }
 
-    console.log('Manager rating record', record)
+    setSubmitting(true)
+    const { error } = await saveReview(record)
+    setSubmitting(false)
+
+    if (error) {
+      setSaveError(error)
+      setSaved(null)
+      return
+    }
+
     setSaved(record)
+    if (onSaved) onSaved(record)
   }
 
   return (
-    <main className="mpr-container">
-      <div className="mpr-page-header">
-        <div className="mpr-header-content">
-          <h1>Skill Matrix</h1>
-          <p>Performance rating entry by the reporting manager. Rate each parameter from 1 to 5.</p>
-        </div>
-        <div className="mpr-header-actions">
-          <button type="button" className="mpr-btn mpr-btn-secondary" onClick={resetForm}>
-            <i className="fa-solid fa-rotate-left"></i>
-            Clear Form
-          </button>
-        </div>
+    <div className="mpr-review">
+      <div className="mpr-review-head">
+        <button type="button" className="mpr-btn mpr-btn-ghost" onClick={onBack}>
+          <i className="fa-solid fa-arrow-left"></i>
+          Back to Team
+        </button>
+        <span className="mpr-review-title">Performance Review</span>
       </div>
+
+      <section className="mpr-employee-strip">
+        <span className="mpr-employee-avatar">{initialsOf(employee.name)}</span>
+        <div className="mpr-employee-name">
+          <strong>{employee.name}</strong>
+          <span>{employee.empCode || '-'}</span>
+        </div>
+        <div className="mpr-employee-facts">
+          <div><span>Department</span><strong>{employee.department || '-'}</strong></div>
+          <div><span>Designation</span><strong>{employee.designation || '-'}</strong></div>
+          <div><span>Branch</span><strong>{employee.branch || '-'}</strong></div>
+          <div><span>Reviewed By</span><strong>{reviewer?.name || '-'}</strong></div>
+        </div>
+      </section>
 
       {errors.length > 0 && (
         <div className="mpr-banner mpr-banner-error">
           <i className="fa-solid fa-circle-exclamation"></i>
           <div>
-            <strong>Please complete the form</strong>
+            <strong>Please complete the review</strong>
             <ul>
               {errors.map(message => <li key={message}>{message}</li>)}
             </ul>
+          </div>
+        </div>
+      )}
+
+      {saveError && (
+        <div className="mpr-banner mpr-banner-error">
+          <i className="fa-solid fa-triangle-exclamation"></i>
+          <div>
+            <strong>Review could not be saved</strong>
+            <p>{saveError}</p>
           </div>
         </div>
       )}
@@ -179,114 +159,25 @@ export default function ManagerRating() {
         <div className="mpr-banner mpr-banner-success">
           <i className="fa-solid fa-circle-check"></i>
           <div>
-            <strong>Rating captured for {saved.name} ({saved.empCode})</strong>
+            <strong>Review submitted for {saved.employeeName} ({saved.employeeCode || '-'})</strong>
             <p>
               Average {saved.averageRating.toFixed(1)} / 5 &middot; {saved.status}
               {saved.retrainingParameters.length > 0 && ` · Retraining due on: ${saved.retrainingParameters.join(', ')}`}
             </p>
+            <p>{saved.employeeName} can now see this review in their own Skill Matrix.</p>
           </div>
         </div>
       )}
 
-      <form className="mpr-form" onSubmit={onSubmit}>
+      <form onSubmit={onSubmit}>
         <div className="mpr-form-grid">
           <div className="mpr-column">
             <section className="mpr-card">
               <div className="mpr-card-head">
-                <h2><i className="fa-solid fa-id-card-clip"></i> Employee Details</h2>
-              </div>
-              <div className="mpr-card-body">
-                <div className="mpr-field-grid">
-                  <div className="mpr-field">
-                    <label htmlFor="empCode">Emp Code <span>*</span></label>
-                    <input
-                      id="empCode"
-                      name="empCode"
-                      type="text"
-                      placeholder="e.g. DPL1042"
-                      value={form.empCode}
-                      onChange={onFieldChange}
-                      autoComplete="off"
-                    />
-                  </div>
-                  <div className="mpr-field">
-                    <label htmlFor="name">Employee Name <span>*</span></label>
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      placeholder="Full name"
-                      value={form.name}
-                      onChange={onFieldChange}
-                      autoComplete="off"
-                    />
-                  </div>
-                  <div className="mpr-field">
-                    <label htmlFor="branch">Branch <span>*</span></label>
-                    <input
-                      id="branch"
-                      name="branch"
-                      type="text"
-                      placeholder="e.g. Kolkata"
-                      value={form.branch}
-                      onChange={onFieldChange}
-                      autoComplete="off"
-                    />
-                  </div>
-                  <div className="mpr-field">
-                    <label htmlFor="designation">Designation <span>*</span></label>
-                    <select id="designation" name="designation" value={form.designation} onChange={onFieldChange}>
-                      <option value="">Select designation</option>
-                      {DESIGNATIONS.map(item => <option key={item} value={item}>{item}</option>)}
-                    </select>
-                  </div>
-                  {/* <div className="mpr-field">
-                    <label htmlFor="dateOfJoining">Date of Joining</label>
-                    <input
-                      id="dateOfJoining"
-                      name="dateOfJoining"
-                      type="date"
-                      value={form.dateOfJoining}
-                      onChange={onFieldChange}
-                    />
-                  </div> */}
-                  {/* <div className="mpr-field">
-                    <label>Ageing</label>
-                    <div className="mpr-readonly">
-                      <i className="fa-regular fa-clock"></i>
-                      {formatAgeing(ageingMonths)}
-                    </div>
-                  </div> */}
-                  {/* <div className="mpr-field">
-                    <label htmlFor="reportingManager">Reporting Manager <span>*</span></label>
-                    <input
-                      id="reportingManager"
-                      name="reportingManager"
-                      type="text"
-                      placeholder="Manager name"
-                      value={form.reportingManager}
-                      onChange={onFieldChange}
-                      autoComplete="off"
-                    />
-                  </div> */}
-                  <div className="mpr-field">
-                    <label htmlFor="ratingPeriod">Rating Period <span>*</span></label>
-                    <input
-                      id="ratingPeriod"
-                      name="ratingPeriod"
-                      type="month"
-                      value={form.ratingPeriod}
-                      onChange={onFieldChange}
-                    />
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="mpr-card">
-              <div className="mpr-card-head">
                 <h2><i className="fa-solid fa-star-half-stroke"></i> Performance Parameters</h2>
-                <span className={`mpr-progress ${allRated ? 'done' : ''}`}>{ratedCount} of {PARAMETERS.length} rated</span>
+                <span className={`mpr-progress ${allRated ? 'done' : ''}`}>
+                  {ratedCount} of {SKILL_PARAMETERS.length} rated
+                </span>
               </div>
 
               <div className="mpr-scale-legend">
@@ -298,8 +189,8 @@ export default function ManagerRating() {
               </div>
 
               <div className="mpr-card-body mpr-rating-list">
-                {PARAMETERS.map((parameter, index) => {
-                  const value = form.ratings[parameter.key]
+                {SKILL_PARAMETERS.map((parameter, index) => {
+                  const value = ratings[parameter.key]
                   return (
                     <div className="mpr-rating-row" key={parameter.key}>
                       <div className="mpr-rating-label">
@@ -327,16 +218,68 @@ export default function ManagerRating() {
 
             <section className="mpr-card">
               <div className="mpr-card-head">
-                <h2><i className="fa-regular fa-comment-dots"></i> Manager Remarks</h2>
+                <h2><i className="fa-regular fa-comment-dots"></i> Review Period and Remarks</h2>
               </div>
               <div className="mpr-card-body">
-                <textarea
-                  name="remarks"
-                  rows={4}
-                  placeholder="Field observations, training already given, action agreed with the employee..."
-                  value={form.remarks}
-                  onChange={onFieldChange}
-                ></textarea>
+                <div className="mpr-field mpr-field-period">
+                  <label htmlFor="ratingPeriod">Rating Period <span>*</span></label>
+                  <input
+                    id="ratingPeriod"
+                    type="month"
+                    value={ratingPeriod}
+                    onChange={(event) => { setRatingPeriod(event.target.value); setSaved(null) }}
+                  />
+                </div>
+                <div className="mpr-field">
+                  <label htmlFor="remarks">Manager Remarks</label>
+                  <textarea
+                    id="remarks"
+                    rows={4}
+                    placeholder="Field observations, training already given, action agreed with the employee..."
+                    value={remarks}
+                    onChange={(event) => { setRemarks(event.target.value); setSaved(null) }}
+                  ></textarea>
+                </div>
+              </div>
+            </section>
+
+            <section className="mpr-card">
+              <div className="mpr-card-head">
+                <h2><i className="fa-solid fa-clock-rotate-left"></i> Review Received Earlier</h2>
+                <span className="mpr-card-note">Rating given by the reporting manager</span>
+              </div>
+              <div className="mpr-card-body">
+                {previousReview ? (
+                  <div className="mpr-previous-list">
+                    {SKILL_PARAMETERS.map(parameter => {
+                      const value = Number(previousReview.ratings?.[parameter.key]) || 0
+                      return (
+                        <div className="mpr-previous-row" key={parameter.key}>
+                          <span>{parameter.label}</span>
+                          <div className="mpr-bar-track">
+                            <span
+                              className={`mpr-bar-fill ${scoreClass(value)}`}
+                              style={{ width: `${(value / 5) * 100}%` }}
+                            ></span>
+                          </div>
+                          <strong className={scoreClass(value)}>{value || '-'}</strong>
+                        </div>
+                      )
+                    })}
+                    <p className="mpr-previous-meta">
+                      Average {Number(previousReview.averageRating || 0).toFixed(1)} / 5 &middot;
+                      {' '}Reviewed by {previousReview.reviewerName || '-'} on {formatDate(previousReview.reviewedOn)}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mpr-empty-inline">
+                    <i className="fa-regular fa-folder-open"></i>
+                    <div>
+                      <strong>No earlier review on record</strong>
+                      <p>Once a review is submitted for {employee.name}, it will show here.</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
           </div>
@@ -364,7 +307,7 @@ export default function ManagerRating() {
                   <div className="mpr-verdict idle">
                     <i className="fa-regular fa-hourglass-half"></i>
                     <div>
-                      <strong>Rating not started</strong>
+                      <strong>Review not started</strong>
                       <p>Rate the parameters to see the result.</p>
                     </div>
                   </div>
@@ -375,8 +318,8 @@ export default function ManagerRating() {
                       <strong>{status === 'good' ? 'Good performance' : 'Low performance - retraining required'}</strong>
                       <p>
                         {allRated
-                          ? `Average of all ${PARAMETERS.length} parameters is ${averageScore.toFixed(1)}.`
-                          : `Based on ${ratedCount} of ${PARAMETERS.length} parameters rated so far.`}
+                          ? `Average of all ${SKILL_PARAMETERS.length} parameters is ${averageScore.toFixed(1)}.`
+                          : `Based on ${ratedCount} of ${SKILL_PARAMETERS.length} parameters rated so far.`}
                       </p>
                     </div>
                   </div>
@@ -390,7 +333,7 @@ export default function ManagerRating() {
                         <li key={parameter.key}>
                           <i className="fa-solid fa-circle-arrow-down"></i>
                           {parameter.label}
-                          <strong>{form.ratings[parameter.key]}</strong>
+                          <strong>{ratings[parameter.key]}</strong>
                         </li>
                       ))}
                     </ul>
@@ -399,16 +342,16 @@ export default function ManagerRating() {
               </div>
 
               <div className="mpr-card-footer">
-                <button type="button" className="mpr-btn mpr-btn-secondary" onClick={resetForm}>Clear</button>
-                <button type="submit" className="mpr-btn mpr-btn-primary" disabled={!allRated}>
-                  <i className="fa-solid fa-floppy-disk"></i>
-                  Submit Rating
+                <button type="button" className="mpr-btn mpr-btn-secondary" onClick={resetReview} disabled={submitting}>Clear</button>
+                <button type="submit" className="mpr-btn mpr-btn-primary" disabled={!allRated || submitting}>
+                  <i className={`fa-solid ${submitting ? 'fa-spinner fa-spin' : 'fa-floppy-disk'}`}></i>
+                  {submitting ? 'Saving...' : 'Submit Review'}
                 </button>
               </div>
             </section>
           </aside>
         </div>
       </form>
-    </main>
+    </div>
   )
 }
