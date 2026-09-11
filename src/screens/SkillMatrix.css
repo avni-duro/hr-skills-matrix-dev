@@ -670,12 +670,22 @@
 
 .skm-member-actions {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   margin-top: auto;
 }
 
-.skm-member-actions .skm-btn {
+.skm-member-actions-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.skm-member-actions-row .skm-btn {
   flex: 1;
+}
+
+.skm-member-actions-primary {
+  width: 100%;
 }
 
 /* Empty states */

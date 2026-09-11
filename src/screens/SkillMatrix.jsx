@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
 import ManagerRating from './ManagerRating'
+import ReviewHistory from '../components/ReviewHistory'
 import { fetchLatestReview, fetchLatestReviewsFor } from '../services/skillMatrixReviews'
 import { assignTrainingForReview } from '../services/skillTraining'
 import SkillTrainingPanel from '../components/SkillTrainingPanel'
@@ -179,7 +180,7 @@ export default function SkillMatrix() {
   const [view, setView] = useState('self')
   const [selfTab, setSelfTab] = useState('videos')
   const [focusSkillKey, setFocusSkillKey] = useState(null)
-  const [selection, setSelection] = useState(null) // { member, mode: 'videos' | 'review' }
+  const [selection, setSelection] = useState(null) // { member, mode: 'videos' | 'review' | 'history' }
   const [teamSearch, setTeamSearch] = useState('')
   const [myReview, setMyReview] = useState(null)
   const [teamReviews, setTeamReviews] = useState(new Map())
@@ -297,9 +298,9 @@ export default function SkillMatrix() {
     }
   }, [hasTeam])
 
-  // Escape closes the review modal, same as the close button
+  // Escape closes the review or history modal, same as their close button
   useEffect(() => {
-    if (selection?.mode !== 'review') return undefined
+    if (selection?.mode !== 'review' && selection?.mode !== 'history') return undefined
     const onKeyDown = (event) => {
       if (event.key === 'Escape') setSelection(null)
     }
@@ -388,7 +389,7 @@ export default function SkillMatrix() {
           </div>
           )}
 
-          <section className="skm-profile">
+          {/* <section className="skm-profile">
             <span className="skm-avatar">{initialsOf(me.name)}</span>
             <div className="skm-profile-name">
               <strong>{me.name}</strong>
@@ -400,7 +401,7 @@ export default function SkillMatrix() {
               <div><span>Branch</span><strong>{me.branch || '-'}</strong></div>
               <div><span>Reporting Manager</span><strong>{myManager?.name || '-'}</strong></div>
             </div>
-          </section>
+          </section> */}
         </>
       )}
 
@@ -512,17 +513,27 @@ export default function SkillMatrix() {
                     </dl>
 
                     <div className="skm-member-actions">
+                      <div className="skm-member-actions-row">
+                        <button
+                          type="button"
+                          className="skm-btn skm-btn-secondary"
+                          onClick={() => setSelection({ member, mode: 'videos' })}
+                        >
+                          <i className="fa-solid fa-clapperboard"></i>
+                          Videos
+                        </button>
+                        <button
+                          type="button"
+                          className="skm-btn skm-btn-secondary"
+                          onClick={() => setSelection({ member, mode: 'history' })}
+                        >
+                          <i className="fa-solid fa-clock-rotate-left"></i>
+                          History
+                        </button>
+                      </div>
                       <button
                         type="button"
-                        className="skm-btn skm-btn-secondary"
-                        onClick={() => setSelection({ member, mode: 'videos' })}
-                      >
-                        <i className="fa-solid fa-clapperboard"></i>
-                        Videos
-                      </button>
-                      <button
-                        type="button"
-                        className="skm-btn skm-btn-primary"
+                        className="skm-btn skm-btn-primary skm-member-actions-primary"
                         onClick={() => setSelection({ member, mode: 'review' })}
                       >
                         <i className="fa-solid fa-star-half-stroke"></i>
@@ -575,8 +586,8 @@ export default function SkillMatrix() {
             <ManagerRating
               employee={selection.member}
               reviewer={me}
-              previousReview={teamReviews.get(selection.member.id) || null}
               onClose={() => setSelection(null)}
+              onViewHistory={() => setSelection({ member: selection.member, mode: 'history' })}
               onSaved={async (record, savedReview) => {
                 await assignTrainingForReview({
                   review: savedReview || { id: null, ratings: record.ratings },
@@ -585,6 +596,17 @@ export default function SkillMatrix() {
                 })
                 await loadReviews(me.id, team.map(member => member.id))
               }}
+            />
+          </div>
+        </div>
+      )}
+
+      {me && hasTeam && view === 'team' && selection?.mode === 'history' && (
+        <div className="skm-modal-overlay" onClick={() => setSelection(null)}>
+          <div className="skm-modal" onClick={(event) => event.stopPropagation()}>
+            <ReviewHistory
+              employee={selection.member}
+              onClose={() => setSelection(null)}
             />
           </div>
         </div>

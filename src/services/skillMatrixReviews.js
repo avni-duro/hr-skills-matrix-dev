@@ -65,6 +65,27 @@ export async function fetchLatestReview(employeeUserId) {
 }
 
 /**
+ * Full review history for one employee, newest first.
+ * Every submitted review is its own row - a second review in the same
+ * rating period is a new entry, not an overwrite of the previous one.
+ */
+export async function fetchReviewHistory(employeeUserId) {
+  if (!employeeUserId) return { reviews: [], missingTable: false, error: null }
+
+  const { data, error } = await supabase
+    .from(REVIEWS_TABLE)
+    .select(REVIEW_COLUMNS)
+    .eq('employee_user_id', employeeUserId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    return { reviews: [], missingTable: isMissingTable(error), error: isMissingTable(error) ? null : error }
+  }
+
+  return { reviews: (data || []).map(mapReviewRow), missingTable: false, error: null }
+}
+
+/**
  * Latest review for each of the given employees, as a Map keyed by user id.
  */
 export async function fetchLatestReviewsFor(employeeUserIds = []) {
@@ -92,8 +113,9 @@ export async function fetchLatestReviewsFor(employeeUserIds = []) {
 }
 
 /**
- * Save a review. A second submit for the same employee and rating period
- * updates the existing row instead of adding another one.
+ * Save a review. Every submit is inserted as a new row so the full
+ * history for an employee - including repeat reviews in the same
+ * rating period - stays on record with its own submitted-at time.
  */
 export async function saveReview(record) {
   const payload = {
@@ -113,12 +135,11 @@ export async function saveReview(record) {
     retraining_required: record.retrainingRequired,
     retraining_parameters: record.retrainingParameters || [],
     remarks: record.remarks || null,
-    updated_at: new Date().toISOString(),
   }
 
   const { data, error } = await supabase
     .from(REVIEWS_TABLE)
-    .upsert(payload, { onConflict: 'employee_user_id,rating_period' })
+    .insert(payload)
     .select(REVIEW_COLUMNS)
     .maybeSingle()
 

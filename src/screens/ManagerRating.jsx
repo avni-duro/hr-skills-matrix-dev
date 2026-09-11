@@ -5,7 +5,6 @@ import {
   RATING_SCALE,
   PASS_MARK,
   scoreClass,
-  formatDate,
   initialsOf,
 } from '../config/skillMatrix'
 import './ManagerRating.css'
@@ -17,7 +16,7 @@ const EMPTY_RATINGS = SKILL_PARAMETERS.reduce((acc, parameter) => ({ ...acc, [pa
  * Employee details arrive pre-filled from the users table; the reporting
  * manager only fills the ratings, period and remarks.
  */
-export default function ManagerRating({ employee, reviewer, previousReview = null, onClose, onSaved }) {
+export default function ManagerRating({ employee, reviewer, onClose, onSaved, onViewHistory }) {
   const [ratings, setRatings] = useState(EMPTY_RATINGS)
   const [ratingPeriod, setRatingPeriod] = useState('')
   const [remarks, setRemarks] = useState('')
@@ -126,6 +125,12 @@ export default function ManagerRating({ employee, reviewer, previousReview = nul
         <div className="mpr-review-banner-side">
           <span>Reviewed By</span>
           <strong>{reviewer?.name || '-'}</strong>
+          {onViewHistory && (
+            <button type="button" className="mpr-review-history-link" onClick={onViewHistory}>
+              <i className="fa-solid fa-clock-rotate-left"></i>
+              View history
+            </button>
+          )}
         </div>
         <button type="button" className="mpr-review-close" onClick={onClose} aria-label="Close">
           <i className="fa-solid fa-xmark"></i>
@@ -244,57 +249,6 @@ export default function ManagerRating({ employee, reviewer, previousReview = nul
               </div>
             </section>
 
-            <section className="mpr-card">
-              <div className="mpr-card-head">
-                <h2><i className="fa-solid fa-clock-rotate-left"></i> Review Received Earlier</h2>
-                <span className="mpr-card-note">Rating given by the reporting manager</span>
-              </div>
-              <div className="mpr-card-body">
-                {previousReview ? (
-                  <div className="mpr-previous">
-                    <div className={`mpr-previous-summary ${scoreClass(previousReview.averageRating || 0)}`}>
-                      <div className="mpr-previous-score">
-                        <strong>{Number(previousReview.averageRating || 0).toFixed(1)}</strong>
-                        <span>/ 5</span>
-                      </div>
-                      <div className="mpr-previous-summary-text">
-                        <strong>{previousReview.reviewerName || '-'}</strong>
-                        <span>Reviewed on {formatDate(previousReview.reviewedOn)}</span>
-                      </div>
-                      <span className={`mpr-previous-result ${(previousReview.averageRating || 0) >= PASS_MARK ? 'good' : 'low'}`}>
-                        <i className={`fa-solid ${(previousReview.averageRating || 0) >= PASS_MARK ? 'fa-circle-check' : 'fa-graduation-cap'}`}></i>
-                        {(previousReview.averageRating || 0) >= PASS_MARK ? 'Good' : 'Low Performance'}
-                      </span>
-                    </div>
-
-                    <div className="mpr-previous-grid">
-                      {SKILL_PARAMETERS.map(parameter => {
-                        const value = Number(previousReview.ratings?.[parameter.key]) || 0
-                        const cls = scoreClass(value)
-                        const icon = cls === 'strong' ? 'fa-circle-check' : cls === 'meets' ? 'fa-circle-minus' : 'fa-triangle-exclamation'
-                        return (
-                          <div className={`mpr-previous-item ${cls}`} key={parameter.key}>
-                            <span className="mpr-previous-item-label">
-                              <i className={`fa-solid ${icon}`}></i>
-                              {parameter.label}
-                            </span>
-                            <span className="mpr-previous-item-score">{value || '-'}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mpr-empty-inline">
-                    <i className="fa-regular fa-folder-open"></i>
-                    <div>
-                      <strong>No earlier review on record</strong>
-                      <p>Once a review is submitted for {employee.name}, it will show here.</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </section>
           </div>
 
           <aside className="mpr-column mpr-side">

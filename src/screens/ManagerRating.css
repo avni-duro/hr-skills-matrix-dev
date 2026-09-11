@@ -103,6 +103,30 @@
   color: #ffffff;
 }
 
+.mpr-review-history-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+}
+
+.mpr-review-history-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.mpr-review-history-link i {
+  font-size: 0.72rem;
+}
+
 .mpr-review-close {
   position: absolute;
   top: 1.1rem;
@@ -500,164 +524,6 @@
   box-shadow: 0 4px 10px rgba(220, 38, 38, 0.25);
 }
 
-/* Earlier review: summary strip + skill tile grid */
-.mpr-previous {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.mpr-previous-summary {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding: 0.85rem 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
-  background: linear-gradient(135deg, #f8fafc 0%, #f3f4f6 100%);
-}
-
-.mpr-previous-summary.strong { border-color: #bbf7d0; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); }
-.mpr-previous-summary.meets { border-color: #dbe3fd; background: linear-gradient(135deg, #f5f7ff 0%, #eef2ff 100%); }
-.mpr-previous-summary.below { border-color: #fecdd3; background: linear-gradient(135deg, #fef5f5 0%, #fef2f2 100%); }
-
-.mpr-previous-score {
-  display: flex;
-  align-items: baseline;
-  gap: 0.2rem;
-  padding: 0.4rem 0.85rem;
-  border-radius: 0.6rem;
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.mpr-previous-score strong {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #111827;
-  line-height: 1;
-}
-
-.mpr-previous-score span {
-  font-size: 0.72rem;
-  color: #9ca3af;
-  font-weight: 700;
-}
-
-.mpr-previous-summary-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  min-width: 0;
-  flex: 1;
-}
-
-.mpr-previous-summary-text strong {
-  font-size: 0.88rem;
-  color: #111827;
-  font-weight: 700;
-}
-
-.mpr-previous-summary-text span {
-  font-size: 0.76rem;
-  color: #6b7280;
-}
-
-.mpr-previous-result {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 0.3rem 0.65rem;
-  border-radius: 9999px;
-  border: 1px solid transparent;
-  flex-shrink: 0;
-}
-
-.mpr-previous-result.good { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
-.mpr-previous-result.low { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-
-.mpr-previous-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.55rem;
-}
-
-.mpr-previous-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 0.6rem;
-  border: 1px solid;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
-.mpr-previous-item-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mpr-previous-item-label i {
-  font-size: 0.85rem;
-  flex-shrink: 0;
-}
-
-.mpr-previous-item-score {
-  font-weight: 800;
-  font-size: 0.88rem;
-  flex-shrink: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-.mpr-previous-item.strong { background: #f0fdf4; border-color: #bbf7d0; color: #14532d; }
-.mpr-previous-item.strong i, .mpr-previous-item.strong .mpr-previous-item-score { color: #059669; }
-
-.mpr-previous-item.meets { background: #f5f7ff; border-color: #dbe3fd; color: #312e81; }
-.mpr-previous-item.meets i, .mpr-previous-item.meets .mpr-previous-item-score { color: #4338ca; }
-
-.mpr-previous-item.below { background: #fef5f5; border-color: #fecdd3; color: #7f1d1d; }
-.mpr-previous-item.below i, .mpr-previous-item.below .mpr-previous-item-score { color: #b91c1c; }
-
-.mpr-empty-inline {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 1rem;
-  border: 1px dashed #d1d5db;
-  border-radius: 0.75rem;
-  background: #f9fafb;
-  color: #6b7280;
-}
-
-.mpr-empty-inline i {
-  font-size: 1.15rem;
-  color: #9ca3af;
-  margin-top: 0.1rem;
-}
-
-.mpr-empty-inline strong {
-  display: block;
-  font-size: 0.88rem;
-  color: #374151;
-  margin-bottom: 0.15rem;
-}
-
-.mpr-empty-inline p {
-  margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.45;
-}
-
 /* Summary side card */
 .mpr-score-ring {
   display: flex;
@@ -849,12 +715,4 @@
   .mpr-scale { width: 100%; }
 
   .mpr-scale-btn { flex: 1; }
-
-  .mpr-previous-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .mpr-previous-summary {
-    align-items: flex-start;
-  }
 }

@@ -51,3 +51,23 @@ export const formatDate = (dateText) => {
   if (Number.isNaN(parsed.getTime())) return dateText
   return parsed.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
+
+// Date and time together, for a review history entry ("11 Sept 2026, 4:32 pm")
+export const formatDateTime = (dateText) => {
+  if (!dateText) return '-'
+  const parsed = new Date(dateText)
+  if (Number.isNaN(parsed.getTime())) return dateText
+  const datePart = parsed.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+  const timePart = parsed.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true })
+  return `${datePart}, ${timePart}`
+}
+
+// "YYYY-MM" rating period as a readable label ("July 2026")
+export const formatRatingPeriod = (period) => {
+  if (!period) return '-'
+  const [year, month] = period.split('-').map(Number)
+  if (!year || !month) return period
+  const parsed = new Date(year, month - 1, 1)
+  if (Number.isNaN(parsed.getTime())) return period
+  return parsed.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+}
