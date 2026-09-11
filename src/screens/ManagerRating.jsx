@@ -17,7 +17,7 @@ const EMPTY_RATINGS = SKILL_PARAMETERS.reduce((acc, parameter) => ({ ...acc, [pa
  * Employee details arrive pre-filled from the users table; the reporting
  * manager only fills the ratings, period and remarks.
  */
-export default function ManagerRating({ employee, reviewer, previousReview = null, onBack, onSaved }) {
+export default function ManagerRating({ employee, reviewer, previousReview = null, onClose, onSaved }) {
   const [ratings, setRatings] = useState(EMPTY_RATINGS)
   const [ratingPeriod, setRatingPeriod] = useState('')
   const [remarks, setRemarks] = useState('')
@@ -111,27 +111,28 @@ export default function ManagerRating({ employee, reviewer, previousReview = nul
 
   return (
     <div className="mpr-review">
-      <div className="mpr-review-head">
-        <button type="button" className="mpr-btn mpr-btn-ghost" onClick={onBack}>
-          <i className="fa-solid fa-arrow-left"></i>
-          Back to Team
+      <header className="mpr-review-banner">
+        <span className="mpr-review-avatar">{initialsOf(employee.name)}</span>
+        <div className="mpr-review-banner-text">
+          <span className="mpr-review-eyebrow">Performance Review</span>
+          <h2>{employee.name}</h2>
+          <div className="mpr-review-meta-row">
+            <span><i className="fa-solid fa-id-badge"></i>{employee.empCode || '-'}</span>
+            <span><i className="fa-solid fa-sitemap"></i>{employee.designation || '-'}</span>
+            <span><i className="fa-solid fa-building"></i>{employee.department || '-'}</span>
+            <span><i className="fa-solid fa-location-dot"></i>{employee.branch || '-'}</span>
+          </div>
+        </div>
+        <div className="mpr-review-banner-side">
+          <span>Reviewed By</span>
+          <strong>{reviewer?.name || '-'}</strong>
+        </div>
+        <button type="button" className="mpr-review-close" onClick={onClose} aria-label="Close">
+          <i className="fa-solid fa-xmark"></i>
         </button>
-        <span className="mpr-review-title">Performance Review</span>
-      </div>
+      </header>
 
-      <section className="mpr-employee-strip">
-        <span className="mpr-employee-avatar">{initialsOf(employee.name)}</span>
-        <div className="mpr-employee-name">
-          <strong>{employee.name}</strong>
-          <span>{employee.empCode || '-'}</span>
-        </div>
-        <div className="mpr-employee-facts">
-          <div><span>Department</span><strong>{employee.department || '-'}</strong></div>
-          <div><span>Designation</span><strong>{employee.designation || '-'}</strong></div>
-          <div><span>Branch</span><strong>{employee.branch || '-'}</strong></div>
-          <div><span>Reviewed By</span><strong>{reviewer?.name || '-'}</strong></div>
-        </div>
-      </section>
+      <div className="mpr-review-scroll">
 
       {errors.length > 0 && (
         <div className="mpr-banner mpr-banner-error">
@@ -250,26 +251,38 @@ export default function ManagerRating({ employee, reviewer, previousReview = nul
               </div>
               <div className="mpr-card-body">
                 {previousReview ? (
-                  <div className="mpr-previous-list">
-                    {SKILL_PARAMETERS.map(parameter => {
-                      const value = Number(previousReview.ratings?.[parameter.key]) || 0
-                      return (
-                        <div className="mpr-previous-row" key={parameter.key}>
-                          <span>{parameter.label}</span>
-                          <div className="mpr-bar-track">
-                            <span
-                              className={`mpr-bar-fill ${scoreClass(value)}`}
-                              style={{ width: `${(value / 5) * 100}%` }}
-                            ></span>
+                  <div className="mpr-previous">
+                    <div className={`mpr-previous-summary ${scoreClass(previousReview.averageRating || 0)}`}>
+                      <div className="mpr-previous-score">
+                        <strong>{Number(previousReview.averageRating || 0).toFixed(1)}</strong>
+                        <span>/ 5</span>
+                      </div>
+                      <div className="mpr-previous-summary-text">
+                        <strong>{previousReview.reviewerName || '-'}</strong>
+                        <span>Reviewed on {formatDate(previousReview.reviewedOn)}</span>
+                      </div>
+                      <span className={`mpr-previous-result ${(previousReview.averageRating || 0) >= PASS_MARK ? 'good' : 'low'}`}>
+                        <i className={`fa-solid ${(previousReview.averageRating || 0) >= PASS_MARK ? 'fa-circle-check' : 'fa-graduation-cap'}`}></i>
+                        {(previousReview.averageRating || 0) >= PASS_MARK ? 'Good' : 'Low Performance'}
+                      </span>
+                    </div>
+
+                    <div className="mpr-previous-grid">
+                      {SKILL_PARAMETERS.map(parameter => {
+                        const value = Number(previousReview.ratings?.[parameter.key]) || 0
+                        const cls = scoreClass(value)
+                        const icon = cls === 'strong' ? 'fa-circle-check' : cls === 'meets' ? 'fa-circle-minus' : 'fa-triangle-exclamation'
+                        return (
+                          <div className={`mpr-previous-item ${cls}`} key={parameter.key}>
+                            <span className="mpr-previous-item-label">
+                              <i className={`fa-solid ${icon}`}></i>
+                              {parameter.label}
+                            </span>
+                            <span className="mpr-previous-item-score">{value || '-'}</span>
                           </div>
-                          <strong className={scoreClass(value)}>{value || '-'}</strong>
-                        </div>
-                      )
-                    })}
-                    <p className="mpr-previous-meta">
-                      Average {Number(previousReview.averageRating || 0).toFixed(1)} / 5 &middot;
-                      {' '}Reviewed by {previousReview.reviewerName || '-'} on {formatDate(previousReview.reviewedOn)}
-                    </p>
+                        )
+                      })}
+                    </div>
                   </div>
                 ) : (
                   <div className="mpr-empty-inline">
@@ -352,6 +365,7 @@ export default function ManagerRating({ employee, reviewer, previousReview = nul
           </aside>
         </div>
       </form>
+      </div>
     </div>
   )
 }

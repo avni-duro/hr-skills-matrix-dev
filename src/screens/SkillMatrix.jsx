@@ -90,16 +90,18 @@ function ReviewReadOnly({ review, personName, managerName, onSkillClick }) {
         </div>
       </div>
 
-      <div className="skm-review-list">
+      <div className="skm-rating-grid">
         {SKILL_PARAMETERS.map(parameter => {
           const value = Number(review.ratings?.[parameter.key]) || 0
+          const cls = scoreClass(value)
+          const icon = cls === 'strong' ? 'fa-circle-check' : cls === 'meets' ? 'fa-circle-minus' : 'fa-triangle-exclamation'
           return (
-            <div className="skm-review-row" key={parameter.key}>
-              <span>{parameter.label}</span>
-              <div className="skm-bar-track">
-                <span className={`skm-bar-fill ${scoreClass(value)}`} style={{ width: `${(value / 5) * 100}%` }}></span>
-              </div>
-              <strong className={scoreClass(value)}>{value || '-'}</strong>
+            <div className={`skm-rating-tile ${cls}`} key={parameter.key}>
+              <span className="skm-rating-tile-label">
+                <i className={`fa-solid ${icon}`}></i>
+                {parameter.label}
+              </span>
+              <span className="skm-rating-tile-score">{value || '-'}</span>
             </div>
           )
         })}
@@ -107,13 +109,33 @@ function ReviewReadOnly({ review, personName, managerName, onSkillClick }) {
 
       {review.retrainingParameters.length > 0 && (
         <div className="skm-retraining">
-          <span className="skm-retraining-title">Retraining due on</span>
+          <div className="skm-retraining-head">
+            <span className="skm-retraining-icon"><i className="fa-solid fa-graduation-cap"></i></span>
+            <div>
+              <span className="skm-retraining-title">
+                Retraining due on {review.retrainingParameters.length} skill{review.retrainingParameters.length > 1 ? 's' : ''}
+              </span>
+              <span className="skm-retraining-hint">
+                {onSkillClick ? 'Tap a skill to open its training videos' : 'Below the 3.0 cut-off'}
+              </span>
+            </div>
+          </div>
           <div className="skm-retraining-tags">
             {review.retrainingParameters.map((label) => {
               const parameter = SKILL_PARAMETERS.find(item => item.label === label)
+              const rating = parameter ? Number(review.ratings?.[parameter.key]) || 0 : null
+
               if (!onSkillClick || !parameter) {
-                return <span className="skm-retraining-tag" key={label}>{label}</span>
+                return (
+                  <span className="skm-retraining-tag" key={label}>
+                    <span className="skm-retraining-tag-text">
+                      <strong>{label}</strong>
+                      {rating !== null && <span>Rated {rating}/5</span>}
+                    </span>
+                  </span>
+                )
               }
+
               return (
                 <button
                   type="button"
@@ -122,13 +144,16 @@ function ReviewReadOnly({ review, personName, managerName, onSkillClick }) {
                   onClick={() => onSkillClick(parameter.key)}
                   title={`Open the training videos for ${label}`}
                 >
-                  {label}
-                  <i className="fa-solid fa-circle-play"></i>
+                  <span className="skm-retraining-tag-icon"><i className="fa-solid fa-play"></i></span>
+                  <span className="skm-retraining-tag-text">
+                    <strong>{label}</strong>
+                    <span>Rated {rating}/5 &middot; Open training</span>
+                  </span>
+                  <i className="fa-solid fa-chevron-right skm-retraining-tag-chevron"></i>
                 </button>
               )
             })}
           </div>
-          <p className="skm-retraining-hint">Click a skill to open its training videos.</p>
         </div>
       )}
 
@@ -272,6 +297,16 @@ export default function SkillMatrix() {
     }
   }, [hasTeam])
 
+  // Escape closes the review modal, same as the close button
+  useEffect(() => {
+    if (selection?.mode !== 'review') return undefined
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') setSelection(null)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [selection])
+
   const switchView = (nextView) => {
     setView(nextView)
     setSelection(null)
@@ -405,11 +440,11 @@ export default function SkillMatrix() {
                 onProgress={() => loadReviews(me.id, team.map(member => member.id))}
               />
 
-              <div className="skm-section-head skm-section-gap">
+              {/* <div className="skm-section-head skm-section-gap">
                 <h2>Videos for {me.department || 'my department'}</h2>
                 <span className="skm-note">Department library, to be linked</span>
               </div>
-              <VideoSlots />
+              <VideoSlots /> */}
             </div>
           ) : (
             <div className="skm-card-body">
@@ -535,20 +570,24 @@ export default function SkillMatrix() {
       )}
 
       {me && hasTeam && view === 'team' && selection?.mode === 'review' && (
-        <ManagerRating
-          employee={selection.member}
-          reviewer={me}
-          previousReview={teamReviews.get(selection.member.id) || null}
-          onBack={() => setSelection(null)}
-          onSaved={async (record, savedReview) => {
-            await assignTrainingForReview({
-              review: savedReview || { id: null, ratings: record.ratings },
-              employeeUserId: selection.member.id,
-              reviewerUserId: me.id,
-            })
-            await loadReviews(me.id, team.map(member => member.id))
-          }}
-        />
+        <div className="skm-modal-overlay" onClick={() => setSelection(null)}>
+          <div className="skm-modal" onClick={(event) => event.stopPropagation()}>
+            <ManagerRating
+              employee={selection.member}
+              reviewer={me}
+              previousReview={teamReviews.get(selection.member.id) || null}
+              onClose={() => setSelection(null)}
+              onSaved={async (record, savedReview) => {
+                await assignTrainingForReview({
+                  review: savedReview || { id: null, ratings: record.ratings },
+                  employeeUserId: selection.member.id,
+                  reviewerUserId: me.id,
+                })
+                await loadReviews(me.id, team.map(member => member.id))
+              }}
+            />
+          </div>
+        </div>
       )}
     </main>
   )
