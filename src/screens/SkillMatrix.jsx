@@ -3,6 +3,8 @@ import { supabase } from '../supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
 import ManagerRating from './ManagerRating'
 import { fetchLatestReview, fetchLatestReviewsFor } from '../services/skillMatrixReviews'
+import { assignTrainingForReview } from '../services/skillTraining'
+import SkillTrainingPanel from '../components/SkillTrainingPanel'
 import {
   SKILL_PARAMETERS,
   PASS_MARK,
@@ -48,7 +50,7 @@ function VideoSlots({ readOnly = false }) {
   )
 }
 
-function ReviewReadOnly({ review, personName, managerName }) {
+function ReviewReadOnly({ review, personName, managerName, onSkillClick }) {
   if (!review) {
     return (
       <div className="skm-empty-inline">
@@ -107,10 +109,26 @@ function ReviewReadOnly({ review, personName, managerName }) {
         <div className="skm-retraining">
           <span className="skm-retraining-title">Retraining due on</span>
           <div className="skm-retraining-tags">
-            {review.retrainingParameters.map(label => (
-              <span className="skm-retraining-tag" key={label}>{label}</span>
-            ))}
+            {review.retrainingParameters.map((label) => {
+              const parameter = SKILL_PARAMETERS.find(item => item.label === label)
+              if (!onSkillClick || !parameter) {
+                return <span className="skm-retraining-tag" key={label}>{label}</span>
+              }
+              return (
+                <button
+                  type="button"
+                  className="skm-retraining-tag is-link"
+                  key={label}
+                  onClick={() => onSkillClick(parameter.key)}
+                  title={`Open the training videos for ${label}`}
+                >
+                  {label}
+                  <i className="fa-solid fa-circle-play"></i>
+                </button>
+              )
+            })}
           </div>
+          <p className="skm-retraining-hint">Click a skill to open its training videos.</p>
         </div>
       )}
 
@@ -135,6 +153,7 @@ export default function SkillMatrix() {
 
   const [view, setView] = useState('self')
   const [selfTab, setSelfTab] = useState('videos')
+  const [focusSkillKey, setFocusSkillKey] = useState(null)
   const [selection, setSelection] = useState(null) // { member, mode: 'videos' | 'review' }
   const [teamSearch, setTeamSearch] = useState('')
   const [myReview, setMyReview] = useState(null)
@@ -243,6 +262,16 @@ export default function SkillMatrix() {
     )
   }, [team, teamSearch])
 
+  const hasTeam = team.length > 0
+
+  // Nobody reports to this user, so the team option is not shown at all
+  useEffect(() => {
+    if (!hasTeam) {
+      setView('self')
+      setSelection(null)
+    }
+  }, [hasTeam])
+
   const switchView = (nextView) => {
     setView(nextView)
     setSelection(null)
@@ -293,6 +322,7 @@ export default function SkillMatrix() {
 
       {me && (
         <>
+          {hasTeam && (
           <div className="skm-switch" role="tablist">
             <button
               type="button"
@@ -321,6 +351,7 @@ export default function SkillMatrix() {
               </span>
             </button>
           </div>
+          )}
 
           <section className="skm-profile">
             <span className="skm-avatar">{initialsOf(me.name)}</span>
@@ -362,8 +393,21 @@ export default function SkillMatrix() {
           {selfTab === 'videos' ? (
             <div className="skm-card-body">
               <div className="skm-section-head">
+                <h2>Retraining from my last review</h2>
+                <span className="skm-note">Watch every video, then clear its assessment</span>
+              </div>
+              <SkillTrainingPanel
+                person={me}
+                review={myReview}
+                viewerUserId={me.id}
+                focusSkillKey={focusSkillKey}
+                onFocusHandled={() => setFocusSkillKey(null)}
+                onProgress={() => loadReviews(me.id, team.map(member => member.id))}
+              />
+
+              <div className="skm-section-head skm-section-gap">
                 <h2>Videos for {me.department || 'my department'}</h2>
-                <span className="skm-note">Assigned on the basis of department and skill</span>
+                <span className="skm-note">Department library, to be linked</span>
               </div>
               <VideoSlots />
             </div>
@@ -375,7 +419,12 @@ export default function SkillMatrix() {
                   {myManager ? `Given by ${myManager.name} (${myManager.empCode || '-'})` : 'No reporting manager mapped'}
                 </span>
               </div>
-              <ReviewReadOnly review={myReview} personName={me.name} managerName={myManager?.name || ''} />
+              <ReviewReadOnly
+                review={myReview}
+                personName={me.name}
+                managerName={myManager?.name || ''}
+                onSkillClick={(skillKey) => { setSelfTab('videos'); setFocusSkillKey(skillKey) }}
+              />
               <p className="skm-foot-note">
                 Scale 1 to 5. {PASS_MARK.toFixed(1)} and above is good; below that retraining is due on the weak parameters.
               </p>
@@ -384,7 +433,7 @@ export default function SkillMatrix() {
         </section>
       )}
 
-      {me && view === 'team' && !selection && (
+      {me && hasTeam && view === 'team' && !selection && (
         <section className="skm-card">
           <div className="skm-card-head">
             <h2><i className="fa-solid fa-users-rectangle"></i> Team Reporting to Me</h2>
@@ -400,15 +449,7 @@ export default function SkillMatrix() {
           </div>
 
           <div className="skm-card-body">
-            {team.length === 0 ? (
-              <div className="skm-empty-inline">
-                <i className="fa-solid fa-user-slash"></i>
-                <div>
-                  <strong>No employee reports to you</strong>
-                  <p>In the users table no record has {me.empCode || 'your employee code'} as reporting manager.</p>
-                </div>
-              </div>
-            ) : filteredTeam.length === 0 ? (
+            {filteredTeam.length === 0 ? (
               <div className="skm-empty-inline">
                 <i className="fa-solid fa-magnifying-glass"></i>
                 <div>
@@ -461,7 +502,7 @@ export default function SkillMatrix() {
         </section>
       )}
 
-      {me && view === 'team' && selection?.mode === 'videos' && (
+      {me && hasTeam && view === 'team' && selection?.mode === 'videos' && (
         <section className="skm-card">
           <div className="skm-card-head">
             <button type="button" className="skm-btn skm-btn-ghost" onClick={() => setSelection(null)}>
@@ -472,23 +513,41 @@ export default function SkillMatrix() {
           </div>
           <div className="skm-card-body">
             <div className="skm-section-head">
-              <h2>{selection.member.name} — assigned videos</h2>
+              <h2>{selection.member.name} — retraining progress</h2>
               <span className="skm-note">
                 {selection.member.empCode || '-'} &middot; {selection.member.department || '-'}
               </span>
             </div>
-            <VideoSlots readOnly />
+            <SkillTrainingPanel
+              person={selection.member}
+              review={teamReviews.get(selection.member.id) || null}
+              viewerUserId={me.id}
+              readOnly
+            />
+
+            {/* <div className="skm-section-head skm-section-gap">
+              <h2>Department videos</h2>
+              <span className="skm-note">View only</span>
+            </div>
+            <VideoSlots readOnly /> */}
           </div>
         </section>
       )}
 
-      {me && view === 'team' && selection?.mode === 'review' && (
+      {me && hasTeam && view === 'team' && selection?.mode === 'review' && (
         <ManagerRating
           employee={selection.member}
           reviewer={me}
           previousReview={teamReviews.get(selection.member.id) || null}
           onBack={() => setSelection(null)}
-          onSaved={() => loadReviews(me.id, team.map(member => member.id))}
+          onSaved={async (record, savedReview) => {
+            await assignTrainingForReview({
+              review: savedReview || { id: null, ratings: record.ratings },
+              employeeUserId: selection.member.id,
+              reviewerUserId: me.id,
+            })
+            await loadReviews(me.id, team.map(member => member.id))
+          }}
         />
       )}
     </main>

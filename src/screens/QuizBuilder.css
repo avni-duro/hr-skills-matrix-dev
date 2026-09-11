@@ -485,3 +485,151 @@
     font-size: 0.8125rem;
   }
 }
+
+/* Questions toolbar */
+.questions-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.questions-count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6B7280;
+}
+
+.questions-count strong {
+  color: #111827;
+  font-weight: 700;
+}
+
+.questions-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 0.9rem;
+  background: #E5E7EB;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #4F46E5;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.link-btn:hover {
+  color: #3730A3;
+  text-decoration: underline;
+}
+
+/* Collapsed question row */
+.question-card.is-collapsed {
+  padding: 0;
+}
+
+.question-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+}
+
+.question-number {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  background: #EEF2FF;
+  color: #4338CA;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.question-summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.question-summary-text strong {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.question-summary-text span {
+  font-size: 0.78rem;
+  color: #6B7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.question-summary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.edit-question-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #E0E7FF;
+  border-radius: 0.5rem;
+  background: #FFFFFF;
+  color: #4338CA;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-question-btn:hover {
+  background: #EEF2FF;
+  border-color: #A5B4FC;
+}
+
+/* Expanded card footer */
+.question-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.9rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #F3F4F6;
+}
+
+.question-hint {
+  font-size: 0.76rem;
+  color: #9CA3AF;
+}

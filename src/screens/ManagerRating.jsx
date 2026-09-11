@@ -96,7 +96,7 @@ export default function ManagerRating({ employee, reviewer, previousReview = nul
     }
 
     setSubmitting(true)
-    const { error } = await saveReview(record)
+    const { review: savedReview, error } = await saveReview(record)
     setSubmitting(false)
 
     if (error) {
@@ -106,7 +106,7 @@ export default function ManagerRating({ employee, reviewer, previousReview = nul
     }
 
     setSaved(record)
-    if (onSaved) onSaved(record)
+    if (onSaved) onSaved(record, savedReview)
   }
 
   return (

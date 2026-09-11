@@ -333,6 +333,12 @@
   margin-bottom: 1rem;
 }
 
+.skm-section-gap {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
 .skm-section-head h2 {
   font-size: 0.98rem;
   font-weight: 700;
@@ -790,13 +796,40 @@
 }
 
 .skm-retraining-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.78rem;
   font-weight: 600;
+  font-family: inherit;
   color: #b91c1c;
   background: #fef2f2;
   border: 1px solid #fee2e2;
   border-radius: 9999px;
   padding: 0.25rem 0.65rem;
+}
+
+.skm-retraining-tag.is-link {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.skm-retraining-tag.is-link i {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.skm-retraining-tag.is-link:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(185, 28, 28, 0.15);
+}
+
+.skm-retraining-hint {
+  margin: 0.55rem 0 0;
+  font-size: 0.75rem;
+  color: #9ca3af;
 }
 
 /* Remarks */

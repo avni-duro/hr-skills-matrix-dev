@@ -1,15 +1,33 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { supabase } from '../supabaseClient';
 import { cachedFetch, TTL } from '../utils/cacheDB';
 import { useNotification } from '../contexts/NotificationContext';
 import './QuizBuilder.css';
+
+const BLANK_ANSWERS = () => ([
+  { id: 'a1', text: '', isCorrect: false },
+  { id: 'a2', text: '', isCorrect: false },
+  { id: 'a3', text: '', isCorrect: false },
+  { id: 'a4', text: '', isCorrect: false }
+]);
+
+// Column names accepted in the import sheet
+const normaliseHeader = (key) => String(key || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const pickCell = (row, names) => {
+  const entry = Object.entries(row).find(([key]) => names.includes(normaliseHeader(key)));
+  return entry ? String(entry[1] ?? '').trim() : '';
+};
 
 const QuizBuilder = () => {
   const mountedRef = useRef(true);
   const { showNotification } = useNotification();
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const presetVideoId = searchParams.get('video');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [modules, setModules] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -29,6 +47,9 @@ const QuizBuilder = () => {
       ]
     }
   ]);
+
+  const [openQuestionIds, setOpenQuestionIds] = useState([1]);
+  const importInputRef = useRef(null);
 
   const [quizConfig, setQuizConfig] = useState({
     title: '',
@@ -137,6 +158,7 @@ const QuizBuilder = () => {
         });
         
         setQuestions(transformedQuestions);
+        setOpenQuestionIds([]);
       }
     } catch (error) {
       console.error('Error fetching quiz:', error);
@@ -145,6 +167,20 @@ const QuizBuilder = () => {
       setLoading(false);
     }
   };
+
+  // A video sent from the Skill Matrix is selected on its own
+  useEffect(() => {
+    if (id || !presetVideoId || !videos.length) return;
+    const video = videos.find(item => item.id === presetVideoId);
+    if (!video) return;
+
+    setQuizConfig(prev => ({
+      ...prev,
+      video_id: video.id,
+      module_id: prev.module_id || video.module_id || '',
+      title: prev.title || `${video.title} — Assessment`
+    }));
+  }, [id, presetVideoId, videos]);
 
   const handleMenuToggle = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -192,18 +228,128 @@ const QuizBuilder = () => {
     }));
   };
 
+  const nextQuestionId = (list) => list.reduce((max, item) => Math.max(max, item.id), 0) + 1;
+
   const addQuestion = () => {
     const newQuestion = {
-      id: questions.length + 1,
+      id: nextQuestionId(questions),
       question: '',
-      answers: [
-        { id: 'a1', text: '', isCorrect: false },
-        { id: 'a2', text: '', isCorrect: false },
-        { id: 'a3', text: '', isCorrect: false },
-        { id: 'a4', text: '', isCorrect: false }
-      ]
+      answers: BLANK_ANSWERS()
     };
     setQuestions([...questions, newQuestion]);
+    setOpenQuestionIds(prev => [...prev, newQuestion.id]);
+  };
+
+  const toggleQuestionOpen = (questionId) => {
+    setOpenQuestionIds(prev => (
+      prev.includes(questionId) ? prev.filter(item => item !== questionId) : [...prev, questionId]
+    ));
+  };
+
+  const setAllOpen = (open) => {
+    setOpenQuestionIds(open ? questions.map(question => question.id) : []);
+  };
+
+  // Excel format with one sample row
+  const downloadFormat = () => {
+    const sample = [{
+      'Question': 'How does an influencer register a claim?',
+      'Option 1': 'Through the DURO app',
+      'Option 2': 'By calling the branch',
+      'Option 3': 'By writing an email',
+      'Option 4': 'At the dealer counter',
+      'Correct Option': 'Option 1'
+    }];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(sample), 'Questions');
+    XLSX.writeFile(workbook, 'Assessment_Questions_Format.xlsx');
+  };
+
+  const handleImportClick = () => {
+    if (importInputRef.current) importInputRef.current.click();
+  };
+
+  const handleImportFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+      if (!rows.length) {
+        showNotification('This sheet has no rows', 'warning');
+        return;
+      }
+
+      const imported = [];
+      const skipped = [];
+
+      rows.forEach((row, index) => {
+        const questionText = pickCell(row, ['question', 'questiontext', 'questions']);
+        const options = [
+          pickCell(row, ['option1', 'optiona', 'a']),
+          pickCell(row, ['option2', 'optionb', 'b']),
+          pickCell(row, ['option3', 'optionc', 'c']),
+          pickCell(row, ['option4', 'optiond', 'd'])
+        ];
+        const correctRaw = pickCell(row, ['correctoption', 'correctanswer', 'correct', 'answer']);
+
+        if (!questionText || options.some(option => !option)) {
+          skipped.push(index + 2);
+          return;
+        }
+
+        // The correct answer can be the option text, or A B C D, or 1 2 3 4, or "Option 2"
+        const cleaned = correctRaw.toLowerCase().replace(/^option\s*/, '').trim();
+        let correctIndex = options.findIndex(option => option.toLowerCase() === correctRaw.toLowerCase());
+        if (correctIndex === -1 && /^[abcd]$/.test(cleaned)) correctIndex = 'abcd'.indexOf(cleaned);
+        if (correctIndex === -1 && /^[1-4]$/.test(cleaned)) correctIndex = Number(cleaned) - 1;
+
+        if (correctIndex === -1) {
+          skipped.push(index + 2);
+          return;
+        }
+
+        imported.push({
+          question: questionText,
+          answers: options.map((text, optionIndex) => ({
+            id: `a${optionIndex + 1}`,
+            text,
+            isCorrect: optionIndex === correctIndex
+          }))
+        });
+      });
+
+      if (!imported.length) {
+        showNotification('No usable row found. Check the format file and the Correct Option column.', 'error');
+        return;
+      }
+
+      setQuestions(prev => {
+        // A single untouched blank question is replaced, anything filled in is kept
+        const keep = prev.filter(question => (
+          question.question.trim() || question.answers.some(answer => answer.text.trim())
+        ));
+        let nextId = nextQuestionId(keep.length ? keep : [{ id: 0 }]);
+        const added = imported.map(item => ({ ...item, id: nextId++ }));
+        return [...keep, ...added];
+      });
+      setOpenQuestionIds([]);
+
+      showNotification(
+        skipped.length
+          ? `${imported.length} questions imported, ${skipped.length} rows skipped (row ${skipped.slice(0, 5).join(', ')})`
+          : `${imported.length} questions imported`,
+        skipped.length ? 'warning' : 'success'
+      );
+    } catch (importError) {
+      console.error('Error importing questions:', importError);
+      showNotification('Could not read this file: ' + (importError.message || 'Unknown error'), 'error');
+    }
   };
 
   const deleteQuestion = (questionId) => {
@@ -213,6 +359,7 @@ const QuizBuilder = () => {
     }
     if (window.confirm('Are you sure you want to delete this question?')) {
       setQuestions(questions.filter(q => q.id !== questionId));
+      setOpenQuestionIds(prev => prev.filter(item => item !== questionId));
     }
   };
 
@@ -341,6 +488,21 @@ const QuizBuilder = () => {
                 </p>
               </div>
               <div className="header-actions">
+                <button className="btn-secondary" onClick={downloadFormat}>
+                  <i className="fa-solid fa-file-excel"></i>
+                  Download Format
+                </button>
+                <button className="btn-secondary" onClick={handleImportClick}>
+                  <i className="fa-solid fa-file-arrow-up"></i>
+                  Import Excel
+                </button>
+                <input
+                  ref={importInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleImportFile}
+                  style={{ display: 'none' }}
+                />
                 <button className="btn-secondary" onClick={() => navigate('/assessments')}>
                   <i className="fa-solid fa-xmark"></i>
                   Cancel
@@ -431,9 +593,52 @@ const QuizBuilder = () => {
               </div>
             </section>
 
+            {/* Questions toolbar */}
+            <section className="questions-toolbar">
+              <span className="questions-count">
+                Questions <strong>{questions.length}</strong>
+              </span>
+              <div className="questions-toolbar-actions">
+                <button className="link-btn" onClick={() => setAllOpen(true)}>Expand all</button>
+                <span className="toolbar-divider"></span>
+                <button className="link-btn" onClick={() => setAllOpen(false)}>Collapse all</button>
+              </div>
+            </section>
+
             {/* Questions List */}
             <section className="questions-list">
-              {questions.map((question, qIndex) => (
+              {questions.map((question, qIndex) => {
+                const isOpen = openQuestionIds.includes(question.id);
+                const correctAnswer = question.answers.find(answer => answer.isCorrect);
+
+                if (!isOpen) {
+                  return (
+                    <div key={question.id} className="question-card is-collapsed">
+                      <div className="question-summary">
+                        <span className="question-number">{qIndex + 1}</span>
+                        <div className="question-summary-text">
+                          <strong>{question.question.trim() || 'Untitled question'}</strong>
+                          <span>
+                            {correctAnswer?.text
+                              ? `Correct: ${correctAnswer.text}`
+                              : 'Correct answer not selected'}
+                          </span>
+                        </div>
+                        <div className="question-summary-actions">
+                          <button className="edit-question-btn" onClick={() => toggleQuestionOpen(question.id)}>
+                            <i className="fa-solid fa-pen"></i>
+                            Edit
+                          </button>
+                          <button className="delete-question-btn" onClick={() => deleteQuestion(question.id)}>
+                            <i className="fa-solid fa-trash-can"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
                 <div key={question.id} className="question-card">
                   <div className="question-header">
                     <div className="question-input-container">
@@ -480,8 +685,17 @@ const QuizBuilder = () => {
                       </div>
                     ))}
                   </div>
+
+                  <div className="question-card-foot">
+                    <span className="question-hint">Select the radio button of the correct option.</span>
+                    <button className="link-btn" onClick={() => toggleQuestionOpen(question.id)}>
+                      <i className="fa-solid fa-check"></i>
+                      Done
+                    </button>
+                  </div>
                 </div>
-              ))}
+                );
+              })}
             </section>
 
             {/* Add Question Button */}
