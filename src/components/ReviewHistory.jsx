@@ -127,7 +127,7 @@ export default function ReviewHistory({ employee, onClose }) {
                       </span>
                       <span className="rhx-entry-main">
                         <strong>{formatDateTime(review.reviewedOn)}</strong>
-                        <span> Reviewed by {review.reviewerName || '-'}</span>
+                        <span>{formatRatingPeriod(review.ratingPeriod)} &middot; Reviewed by {review.reviewerName || '-'}</span>
                       </span>
                       <span className={`rhx-entry-status ${isGood ? 'good' : 'low'}`}>
                         <i className={`fa-solid ${isGood ? 'fa-circle-check' : 'fa-graduation-cap'}`}></i>
@@ -138,18 +138,15 @@ export default function ReviewHistory({ employee, onClose }) {
 
                     {isOpen && (
                       <div className="rhx-entry-body">
-                        <div className="rhx-entry-grid">
+                        <div className="rhx-skill-rows">
                           {SKILL_PARAMETERS.map((parameter) => {
                             const value = Number(review.ratings?.[parameter.key]) || 0
-                            const cls = scoreClass(value)
-                            const icon = cls === 'strong' ? 'fa-circle-check' : cls === 'meets' ? 'fa-circle-minus' : 'fa-triangle-exclamation'
+                            const weak = value > 0 && value < PASS_MARK
                             return (
-                              <div className={`rhx-entry-item ${cls}`} key={parameter.key}>
-                                <span className="rhx-entry-item-label">
-                                  <i className={`fa-solid ${icon}`}></i>
-                                  {parameter.label}
-                                </span>
-                                <span className="rhx-entry-item-score">{value || '-'}</span>
+                              <div className={`rhx-skill-row ${weak ? 'low' : 'good'}`} key={parameter.key}>
+                                <span className="rhx-skill-icon"><i className={`fa-solid ${parameter.icon}`}></i></span>
+                                <span className="rhx-skill-label">{parameter.label}</span>
+                                <span className="rhx-skill-score">{value || '-'}/5</span>
                               </div>
                             )
                           })}

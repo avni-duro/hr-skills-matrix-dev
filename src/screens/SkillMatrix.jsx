@@ -8,6 +8,7 @@ import { assignTrainingForReview } from '../services/skillTraining'
 import SkillTrainingPanel from '../components/SkillTrainingPanel'
 import {
   SKILL_PARAMETERS,
+  RATING_SCALE,
   PASS_MARK,
   scoreClass,
   formatDate,
@@ -69,93 +70,153 @@ function ReviewReadOnly({ review, personName, managerName, onSkillClick }) {
   }
 
   const isGood = review.averageRating >= PASS_MARK
+  const ringClass = scoreClass(review.averageRating)
+
+  // Skills that cleared the cut-off come first, the weak ones sit at the bottom
+  const scored = SKILL_PARAMETERS.map(parameter => {
+    const value = Number(review.ratings?.[parameter.key]) || 0
+    return { ...parameter, value, weak: value > 0 && value < PASS_MARK }
+  })
+  const ordered = [...scored.filter(item => !item.weak), ...scored.filter(item => item.weak)]
+  const weakSkills = scored.filter(item => item.weak)
+  const goodCount = scored.length - weakSkills.length
 
   return (
     <div className="skm-review">
-      <div className="skm-review-meta">
-        <div className={`skm-review-score ${scoreClass(review.averageRating)}`}>
-          <strong>{review.averageRating.toFixed(1)}</strong>
-          <span>out of 5</span>
-        </div>
-        <div className="skm-review-meta-facts">
-          <div><span>Rating Period</span><strong>{review.ratingPeriod || '-'}</strong></div>
-          <div><span>Reviewed By</span><strong>{review.reviewerName || '-'}</strong></div>
-          <div><span>Submitted On</span><strong>{formatDate(review.reviewedOn)}</strong></div>
-          <div>
-            <span>Result</span>
-            <strong className={`skm-result ${isGood ? 'good' : 'low'}`}>
-              <i className={`fa-solid ${isGood ? 'fa-circle-check' : 'fa-graduation-cap'}`}></i>
-              {isGood ? 'Good' : 'Low Performance'}
-            </strong>
-          </div>
-        </div>
-      </div>
-
-      <div className="skm-rating-grid">
-        {SKILL_PARAMETERS.map(parameter => {
-          const value = Number(review.ratings?.[parameter.key]) || 0
-          const cls = scoreClass(value)
-          const icon = cls === 'strong' ? 'fa-circle-check' : cls === 'meets' ? 'fa-circle-minus' : 'fa-triangle-exclamation'
-          return (
-            <div className={`skm-rating-tile ${cls}`} key={parameter.key}>
-              <span className="skm-rating-tile-label">
-                <i className={`fa-solid ${icon}`}></i>
-                {parameter.label}
+      {/* Score summary */}
+      <section className="skm-score-card">
+        <div className={`skm-score-stars ${ringClass}`}>
+          <span className="skm-score-number">
+            <strong>{review.averageRating.toFixed(1)}</strong>
+            <small>/ 5</small>
+          </span>
+          <span className="skm-stars" title={`${review.averageRating.toFixed(1)} out of 5`}>
+            <span className="skm-stars-row">
+              {RATING_SCALE.map(star => <i className="fa-solid fa-star" key={star}></i>)}
+            </span>
+            <span className="skm-stars-clip" style={{ width: `${(review.averageRating / 5) * 100}%` }}>
+              <span className="skm-stars-row filled">
+                {RATING_SCALE.map(star => <i className="fa-solid fa-star" key={star}></i>)}
               </span>
-              <span className="skm-rating-tile-score">{value || '-'}</span>
-            </div>
-          )
-        })}
-      </div>
+            </span>
+          </span>
+          <span className="skm-score-caption">Average rating</span>
+        </div>
 
-      {review.retrainingParameters.length > 0 && (
-        <div className="skm-retraining">
-          <div className="skm-retraining-head">
-            <span className="skm-retraining-icon"><i className="fa-solid fa-graduation-cap"></i></span>
+        <div className="skm-score-side">
+          <span className={`skm-score-status ${isGood ? 'good' : 'low'}`}>
+            <i className={`fa-solid ${isGood ? 'fa-circle-check' : 'fa-triangle-exclamation'}`}></i>
+            {isGood ? 'Good' : 'Low Performance'}
+          </span>
+
+          <div className="skm-score-facts">
             <div>
-              <span className="skm-retraining-title">
-                Retraining due on {review.retrainingParameters.length} skill{review.retrainingParameters.length > 1 ? 's' : ''}
-              </span>
-              <span className="skm-retraining-hint">
-                {onSkillClick ? 'Tap a skill to open its training videos' : 'Below the 3.0 cut-off'}
-              </span>
+              <span><i className="fa-regular fa-calendar"></i>Rating Period</span>
+              <strong>{review.ratingPeriod || '-'}</strong>
+            </div>
+            <div>
+              <span><i className="fa-regular fa-user"></i>Reviewed By</span>
+              <strong>{review.reviewerName || '-'}</strong>
+            </div>
+            <div>
+              <span><i className="fa-regular fa-calendar-check"></i>Submitted On</span>
+              <strong>{formatDate(review.reviewedOn)}</strong>
             </div>
           </div>
-          <div className="skm-retraining-tags">
-            {review.retrainingParameters.map((label) => {
-              const parameter = SKILL_PARAMETERS.find(item => item.label === label)
-              const rating = parameter ? Number(review.ratings?.[parameter.key]) || 0 : null
+        </div>
+      </section>
 
-              if (!onSkillClick || !parameter) {
-                return (
-                  <span className="skm-retraining-tag" key={label}>
-                    <span className="skm-retraining-tag-text">
-                      <strong>{label}</strong>
-                      {rating !== null && <span>Rated {rating}/5</span>}
-                    </span>
-                  </span>
-                )
-              }
+      {/* Overall performance */}
+      <section className={`skm-overall ${isGood ? 'good' : 'low'}`}>
+        <span className="skm-overall-icon">
+          <i className={`fa-solid ${isGood ? 'fa-trophy' : 'fa-graduation-cap'}`}></i>
+        </span>
+        <div className="skm-overall-text">
+          <strong>Overall Performance</strong>
+          <p>
+            {isGood
+              ? weakSkills.length
+                ? `Your performance is strong, with ${weakSkills.length} area${weakSkills.length > 1 ? 's' : ''} needing attention.`
+                : 'Every skill is at or above the cut-off. Nothing is pending.'
+              : `Your average is below ${PASS_MARK.toFixed(1)}. Complete the training listed below.`}
+          </p>
+        </div>
+        <i className={`fa-solid ${isGood ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'} skm-overall-art`}></i>
+      </section>
 
-              return (
-                <button
-                  type="button"
-                  className="skm-retraining-tag is-link"
-                  key={label}
-                  onClick={() => onSkillClick(parameter.key)}
-                  title={`Open the training videos for ${label}`}
-                >
-                  <span className="skm-retraining-tag-icon"><i className="fa-solid fa-play"></i></span>
-                  <span className="skm-retraining-tag-text">
-                    <strong>{label}</strong>
-                    <span>Rated {rating}/5 &middot; Open training</span>
-                  </span>
-                  <i className="fa-solid fa-chevron-right skm-retraining-tag-chevron"></i>
-                </button>
-              )
-            })}
+      {/* Skill assessment */}
+      <section className="skm-assess">
+        <div className="skm-assess-head">
+          <span className="skm-assess-icon"><i className="fa-solid fa-table-cells-large"></i></span>
+          <div className="skm-assess-title">
+            <strong>Skill Assessment</strong>
+            <span>Your rating on each training area</span>
+          </div>
+          <div className="skm-assess-counts">
+            <span className="skm-count good">
+              <i className="skm-count-dot"></i>Good <strong>{goodCount}/{scored.length}</strong>
+            </span>
+            <span className="skm-count low">
+              <i className="skm-count-dot"></i>Needs Attention <strong>{weakSkills.length}/{scored.length}</strong>
+            </span>
           </div>
         </div>
+
+        <div className="skm-skill-rows">
+          {ordered.map((item) => {
+            const clickable = Boolean(item.weak && onSkillClick)
+            const Row = clickable ? 'button' : 'div'
+            return (
+              <Row
+                key={item.key}
+                className={`skm-skill-row ${item.weak ? 'low' : 'good'} ${clickable ? 'is-link' : ''}`}
+                {...(clickable
+                  ? { type: 'button', onClick: () => onSkillClick(item.key), title: `Open the training videos for ${item.label}` }
+                  : {})}
+              >
+                <span className="skm-skill-icon"><i className={`fa-solid ${item.icon}`}></i></span>
+                <span className="skm-skill-text">
+                  <strong>{item.label}</strong>
+                  <span>{item.description}</span>
+                </span>
+                <span className="skm-skill-score">{item.value || '-'}/5</span>
+                <i className="fa-solid fa-chevron-right skm-skill-chevron"></i>
+              </Row>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* Action required */}
+      {weakSkills.length > 0 && (
+        <section className="skm-action">
+          <div className="skm-action-head">
+            <span className="skm-action-icon"><i className="fa-solid fa-triangle-exclamation"></i></span>
+            <div>
+              <strong>Action Required</strong>
+              <p>Finish the training on {weakSkills.length === 1 ? 'this area' : 'these areas'} to lift your overall rating.</p>
+            </div>
+          </div>
+
+          {weakSkills.map((item) => (
+            <div className="skm-action-item" key={item.key}>
+              <span className="skm-action-item-icon"><i className="fa-solid fa-graduation-cap"></i></span>
+              <div className="skm-action-item-text">
+                <div className="skm-action-item-top">
+                  <strong>{item.label}</strong>
+                  <span className="skm-skill-score low">{item.value}/5</span>
+                </div>
+                <span className="skm-action-item-desc">{item.description}</span>
+              </div>
+              {onSkillClick && (
+                <button type="button" className="skm-action-btn" onClick={() => onSkillClick(item.key)}>
+                  Open Training
+                  <i className="fa-solid fa-chevron-right"></i>
+                </button>
+              )}
+            </div>
+          ))}
+        </section>
       )}
 
       {review.remarks && (
@@ -329,7 +390,7 @@ export default function SkillMatrix() {
       <div className="skm-page-header">
         <div className="skm-header-content">
           <h1>Skill Matrix</h1>
-          <p>Training videos and skill review, for yourself and for the team reporting to you.</p>
+          {/* <p>Training videos and skill review, for yourself and for the team reporting to you.</p> */}
         </div>
         <div className="skm-header-actions">
           <button type="button" className="skm-btn skm-btn-secondary" onClick={loadData}>
@@ -449,10 +510,15 @@ export default function SkillMatrix() {
             </div>
           ) : (
             <div className="skm-card-body">
-              <div className="skm-section-head">
-                <h2>Review by my reporting manager</h2>
-                <span className="skm-note">
-                  {myManager ? `Given by ${myManager.name} (${myManager.empCode || '-'})` : 'No reporting manager mapped'}
+              <div className="skm-review-head">
+                <div className="skm-review-head-text">
+                  <h2>My Review</h2>
+                  {/* <p>Your training performance and skill assessment summary</p> */}
+                </div>
+                <span className="skm-given-by">
+                  <i className="fa-regular fa-user"></i>
+                  <span>Given by</span>
+                  <strong>{myManager ? `${myManager.name} (${myManager.empCode || '-'})` : 'No manager mapped'}</strong>
                 </span>
               </div>
               <ReviewReadOnly
