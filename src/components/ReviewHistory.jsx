@@ -1,12 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchReviewHistory } from '../services/skillMatrixReviews'
-import {
-  SKILL_PARAMETERS,
-  PASS_MARK,
-  scoreClass,
-  formatDateTime,
-  formatRatingPeriod,
-  initialsOf,
+import { SKILL_PARAMETERS, PASS_MARK, scoreClass, formatDateTime, formatRatingPeriod, initialsOf,
 } from '../config/skillMatrix'
 import './ReviewHistory.css'
 

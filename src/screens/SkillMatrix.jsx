@@ -136,9 +136,9 @@ function ReviewReadOnly({ review, personName, managerName, onSkillClick }) {
           <p>
             {isGood
               ? weakSkills.length
-                ? `Your performance is strong, with ${weakSkills.length} area${weakSkills.length > 1 ? 's' : ''} needing attention.`
-                : 'Every skill is at or above the cut-off. Nothing is pending.'
-              : `Your average is below ${PASS_MARK.toFixed(1)}. Complete the training listed below.`}
+                ? `Good work overall. ${weakSkills.length} skill${weakSkills.length > 1 ? 's' : ''} just ${weakSkills.length > 1 ? 'need' : 'needs'} a little more practice, and the training below is there to help you build ${weakSkills.length > 1 ? 'them' : 'it'} up.`
+                : 'Every skill is at or above the mark. Keep doing what you are doing.'
+              : 'This score is a starting point, not a final word. Work through the training below, and your next review will show how far you have come.'}
           </p>
         </div>
         <i className={`fa-solid ${isGood ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'} skm-overall-art`}></i>
@@ -147,19 +147,19 @@ function ReviewReadOnly({ review, personName, managerName, onSkillClick }) {
       {/* Skill assessment */}
       <section className="skm-assess">
         <div className="skm-assess-head">
-          <span className="skm-assess-icon"><i className="fa-solid fa-table-cells-large"></i></span>
-          <div className="skm-assess-title">
+          {/* <span className="skm-assess-icon"><i className="fa-solid fa-table-cells-large"></i></span> */}
+          {/* <div className="skm-assess-title">
             <strong>Skill Assessment</strong>
             <span>Your rating on each training area</span>
-          </div>
-          <div className="skm-assess-counts">
+          </div> */}
+          {/* <div className="skm-assess-counts">
             <span className="skm-count good">
               <i className="skm-count-dot"></i>Good <strong>{goodCount}/{scored.length}</strong>
             </span>
             <span className="skm-count low">
               <i className="skm-count-dot"></i>Needs Attention <strong>{weakSkills.length}/{scored.length}</strong>
             </span>
-          </div>
+          </div> */}
         </div>
 
         <div className="skm-skill-rows">
