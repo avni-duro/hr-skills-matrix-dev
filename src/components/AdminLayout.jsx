@@ -1,6 +1,7 @@
 import { Outlet, useLocation, Navigate } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
+import TrainingReminder from './TrainingReminder'
 import { useAuth } from '../contexts/AuthContext'
 
 // Breadcrumb mapping from pathname to labels
@@ -64,6 +65,7 @@ function AdminLayout() {
         <Header breadcrumbItems={breadcrumbItems} onMenuToggle={() => {}} />
         <Outlet />
       </div>
+      <TrainingReminder />
     </div>
   )
 }

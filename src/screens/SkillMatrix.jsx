@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
 import ManagerRating from './ManagerRating'
@@ -231,6 +232,7 @@ function ReviewReadOnly({ review, personName, managerName, onSkillClick }) {
 
 export default function SkillMatrix() {
   const { user } = useAuth()
+  const location = useLocation()
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -337,6 +339,17 @@ export default function SkillMatrix() {
   useEffect(() => {
     loadData()
   }, [loadData])
+
+  // Opened from the training reminder popup: land on the videos tab, on that skill
+  const reminderSkillKey = location.state?.focusSkillKey || null
+  useEffect(() => {
+    if (!reminderSkillKey) return
+    setView('self')
+    setSelfTab('videos')
+    setFocusSkillKey(reminderSkillKey)
+    // Drop the router state so a page refresh does not focus the skill again
+    window.history.replaceState({}, '')
+  }, [reminderSkillKey])
 
   const filteredTeam = useMemo(() => {
     const needle = teamSearch.trim().toLowerCase()

@@ -119,6 +119,44 @@ export async function fetchTrainingRows(employeeUserId) {
 }
 
 /**
+ * Training still open for one employee: the video is not watched yet, or its
+ * assessment is not cleared yet. Used by the reminder popup, so it carries the
+ * video title and the skill name along with the row.
+ */
+export async function fetchPendingTraining(employeeUserId) {
+  if (!employeeUserId) return { items: [], missingTable: false, error: null }
+
+  const { data, error } = await supabase
+    .from(TRAINING_TABLE)
+    .select('id, status, video_completed, assessment_passed, assigned_on, video_id, skill_id, videos (id, title), skill_master (skill_key, skill_name)')
+    .eq('employee_user_id', employeeUserId)
+    .neq('status', 'completed')
+    .order('assigned_on', { ascending: true })
+
+  if (error) {
+    return { items: [], missingTable: isMissingTable(error), error: isMissingTable(error) ? null : error }
+  }
+
+  const items = (data || [])
+    // A cleared row is never a reminder, whatever the status column says
+    .filter(row => !(row.video_completed && row.assessment_passed))
+    .map(row => ({
+      id: row.id,
+      videoId: row.video_id,
+      skillId: row.skill_id,
+      videoTitle: row.videos?.title || 'Training video',
+      skillKey: row.skill_master?.skill_key || '',
+      skillName: row.skill_master?.skill_name || 'Skill',
+      videoCompleted: Boolean(row.video_completed),
+      assessmentPassed: Boolean(row.assessment_passed),
+      // What is left to do, so the reminder can say it in one line
+      nextStep: row.video_completed ? 'assessment' : 'video',
+    }))
+
+  return { items, missingTable: false, error: null }
+}
+
+/**
  * After a review is saved, create the training rows for every skill rated below the cut-off.
  * Existing rows for the same review are left as they are.
  */
